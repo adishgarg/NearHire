@@ -44,7 +44,7 @@ export async function createOrder(data: z.infer<typeof createOrderSchema>) {
     dueDate.setDate(dueDate.getDate() + gig.deliveryTime)
 
     // Create order and conversation in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       const order = await tx.order.create({
         data: {
           gigId: validatedData.gigId,
