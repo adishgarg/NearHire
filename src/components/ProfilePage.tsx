@@ -142,7 +142,7 @@ export function ProfilePage({ user = defaultUser, gigs = [], onGigClick, isOwnPr
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {userGigs.map((gig) => (
-                  <GigCard key={gig.id} gig={gig} onClick={() => onGigClick(gig)} />
+                  <GigCard key={gig.id} gig={gig} onClick={() => onGigClick?.(gig)} />
                 ))}
               </div>
             )}

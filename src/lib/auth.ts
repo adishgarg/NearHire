@@ -5,7 +5,7 @@ import GitHub from "next-auth/providers/github"
 // import { prisma } from "@/lib/prisma"
 
 export const {
-  handlers: { GET, POST },
+  handlers,
   auth,
   signIn,
   signOut,

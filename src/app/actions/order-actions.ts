@@ -17,6 +17,9 @@ export async function createOrder(data: z.infer<typeof createOrderSchema>) {
     throw new Error("Unauthorized")
   }
 
+  // Type assertion since we've confirmed user exists
+  const userId = session.user.id as string
+
   const validatedData = createOrderSchema.parse(data)
   
   try {
@@ -30,7 +33,7 @@ export async function createOrder(data: z.infer<typeof createOrderSchema>) {
       throw new Error("Gig not found")
     }
 
-    if (gig.sellerId === session.user.id) {
+    if (gig.sellerId === userId) {
       throw new Error("Cannot order your own gig")
     }
 
@@ -45,7 +48,7 @@ export async function createOrder(data: z.infer<typeof createOrderSchema>) {
       const order = await tx.order.create({
         data: {
           gigId: validatedData.gigId,
-          buyerId: session.user!.id,
+          buyerId: userId,
           sellerId: gig.sellerId,
           price: gig.price,
           platformFee,
@@ -61,7 +64,7 @@ export async function createOrder(data: z.infer<typeof createOrderSchema>) {
           participants: {
             createMany: {
               data: [
-                { userId: session.user!.id },
+                { userId: userId },
                 { userId: gig.sellerId },
               ],
             },

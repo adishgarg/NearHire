@@ -7,6 +7,10 @@ export interface User {
   reviewCount: number;
   level: 'New Seller' | 'Level 1' | 'Level 2' | 'Top Rated';
   verified: boolean;
+  bio?: string;
+  skills?: string[];
+  location?: string;
+  memberSince?: string;
 }
 
 export interface Gig {
