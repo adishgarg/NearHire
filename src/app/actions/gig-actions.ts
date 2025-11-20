@@ -221,7 +221,7 @@ export async function searchGigs(params: {
     let filteredGigs = gigs
     if (location) {
       const { latitude, longitude, radius } = location
-      filteredGigs = gigs.filter((gig) => {
+      filteredGigs = gigs.filter((gig: any) => {
         if (!gig.seller.latitude || !gig.seller.longitude) return false
         
         const distance = calculateDistance(
