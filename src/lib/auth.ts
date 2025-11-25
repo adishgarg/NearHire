@@ -37,7 +37,8 @@ export const {
       if (process.env.NODE_ENV !== 'production' || typeof window === 'undefined') {
         try {
           if (user.email) {
-            const { prisma } = await import('./prisma')
+            const { PrismaClient } = await import('@prisma/client')
+            const prisma = new PrismaClient()
             await prisma.user.upsert({
               where: { email: user.email },
               update: {
@@ -51,6 +52,7 @@ export const {
                 emailVerified: new Date(),
               },
             })
+            await prisma.$disconnect()
           }
         } catch (error) {
           console.error('Error saving user to database:', error)
@@ -68,13 +70,15 @@ export const {
         if (typeof window === 'undefined') {
           try {
             if (session.user.email) {
-              const { prisma } = await import('./prisma')
+              const { PrismaClient } = await import('@prisma/client')
+              const prisma = new PrismaClient()
               const dbUser = await prisma.user.findUnique({
                 where: { email: session.user.email }
               })
               if (dbUser) {
                 session.user.id = dbUser.id
               }
+              await prisma.$disconnect()
             }
           } catch (error) {
             console.error('Error fetching user from database:', error)

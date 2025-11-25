@@ -1,10 +1,15 @@
 "use server"
 
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { generateSlug } from "@/lib/utils"
+
+// Dynamic Prisma import to avoid build issues
+async function getPrisma() {
+  const { PrismaClient } = await import('@prisma/client')
+  return new PrismaClient()
+}
 
 const createGigSchema = z.object({
   title: z.string().min(5).max(100),
@@ -28,6 +33,7 @@ export async function createGig(data: z.infer<typeof createGigSchema>) {
   const validatedData = createGigSchema.parse(data)
   
   try {
+    const prisma = await getPrisma()
     const slug = generateSlug(validatedData.title)
     
     const gig = await prisma.gig.create({
@@ -57,6 +63,7 @@ export async function updateGig(
   }
 
   // Verify ownership
+  const prisma = await getPrisma()
   const existingGig = await prisma.gig.findFirst({
     where: {
       id: gigId,
@@ -97,6 +104,7 @@ export async function deleteGig(gigId: string) {
   }
 
   // Verify ownership and check for active orders
+  const prisma = await getPrisma()
   const gig = await prisma.gig.findFirst({
     where: {
       id: gigId,
@@ -184,6 +192,7 @@ export async function searchGigs(params: {
   }
 
   try {
+    const prisma = await getPrisma()
     const [gigs, total] = await Promise.all([
       prisma.gig.findMany({
         where,

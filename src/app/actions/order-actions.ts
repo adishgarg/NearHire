@@ -1,9 +1,14 @@
 "use server"
 
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+
+// Dynamic Prisma import to avoid build issues
+async function getPrisma() {
+  const { PrismaClient } = await import('@prisma/client')
+  return new PrismaClient()
+}
 
 const createOrderSchema = z.object({
   gigId: z.string(),
@@ -24,6 +29,7 @@ export async function createOrder(data: z.infer<typeof createOrderSchema>) {
   
   try {
     // Get gig details
+    const prisma = await getPrisma()
     const gig = await prisma.gig.findUnique({
       where: { id: validatedData.gigId },
       include: { seller: true },
@@ -94,6 +100,7 @@ export async function updateOrderStatus(
   }
 
   try {
+    const prisma = await getPrisma()
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: { gig: true },
@@ -154,6 +161,7 @@ export async function getOrderDetails(orderId: string) {
   }
 
   try {
+    const prisma = await getPrisma()
     const order = await prisma.order.findFirst({
       where: {
         id: orderId,
@@ -233,6 +241,7 @@ export async function getUserOrders(type: "buyer" | "seller" = "buyer") {
   }
 
   try {
+    const prisma = await getPrisma()
     const whereCondition = type === "buyer" 
       ? { buyerId: session.user.id }
       : { sellerId: session.user.id }
