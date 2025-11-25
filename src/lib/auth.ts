@@ -6,13 +6,33 @@ import GitHub from "next-auth/providers/github"
 async function getPrismaClient() {
   try {
     const { PrismaClient } = await import('@prisma/client')
+    
+    // For Prisma v7, we need to provide either adapter or accelerateUrl
     const prisma = new PrismaClient({
-      log: ['query', 'error', 'warn'],
+      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      // Using accelerateUrl if available, otherwise fall back to basic configuration
+      ...(process.env.ACCELERATE_URL ? { accelerateUrl: process.env.ACCELERATE_URL } : {})
     })
+    
+    // Test the connection
+    await prisma.$connect()
+    console.log('✅ Prisma client initialized and connected successfully')
     return prisma
   } catch (error) {
-    console.error('Failed to initialize Prisma client:', error)
-    throw error
+    console.error('❌ Failed to initialize Prisma client:', error)
+    
+    // Fallback: Try with minimal configuration
+    try {
+      console.log('🔄 Trying fallback Prisma client configuration...')
+      const { PrismaClient } = await import('@prisma/client')
+      const prisma = new PrismaClient()
+      await prisma.$connect()
+      console.log('✅ Fallback Prisma client connected successfully')
+      return prisma
+    } catch (fallbackError) {
+      console.error('❌ Fallback Prisma client also failed:', fallbackError)
+      throw fallbackError
+    }
   }
 }
 
