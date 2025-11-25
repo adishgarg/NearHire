@@ -1,16 +1,19 @@
 export interface User {
   id: string;
-  name: string;
-  username: string;
-  avatar: string;
-  rating: number;
-  reviewCount: number;
-  level: 'New Seller' | 'Level 1' | 'Level 2' | 'Top Rated';
-  verified: boolean;
-  bio?: string;
+  name?: string | null;
+  username?: string | null;
+  email?: string;
+  image?: string | null;
+  avatar?: string;
+  rating?: number;
+  reviewCount?: number;
+  level?: 'NEW_SELLER' | 'LEVEL_ONE' | 'LEVEL_TWO' | 'TOP_RATED' | string;
+  verified?: boolean;
+  bio?: string | null;
   skills?: string[];
-  location?: string;
+  location?: string | null;
   memberSince?: string;
+  createdAt?: string;
 }
 
 export interface Gig {

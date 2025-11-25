@@ -58,12 +58,12 @@ export function GigDetail({ gigId, gig, onBack }: GigDetailProps) {
               <h1 className="mb-4 text-white">{currentGig.title}</h1>
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={currentGig.seller.avatar} alt={currentGig.seller.name} />
-                  <AvatarFallback>{currentGig.seller.name[0]}</AvatarFallback>
+                  <AvatarImage src={currentGig.seller.avatar || currentGig.seller.image || ''} alt={currentGig.seller.name || 'Seller'} />
+                  <AvatarFallback>{(currentGig.seller.name || 'S')[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-white">{currentGig.seller.name}</p>
+                    <p className="text-white">{currentGig.seller.name || 'Unknown Seller'}</p>
                     {currentGig.seller.verified && (
                       <VerifiedIcon className="h-4 w-4 fill-emerald-600 text-emerald-600" />
                     )}
@@ -71,11 +71,11 @@ export function GigDetail({ gigId, gig, onBack }: GigDetailProps) {
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-                      <span className="text-amber-500">{currentGig.rating.toFixed(1)}</span>
+                      <span className="text-amber-500">{currentGig.rating?.toFixed(1) || '0.0'}</span>
                     </div>
-                    <span className="text-gray-400">({currentGig.reviewCount} reviews)</span>
+                    <span className="text-gray-400">({currentGig.reviewCount || 0} reviews)</span>
                     <Badge variant="outline" className="border-emerald-600 text-emerald-400">
-                      {currentGig.seller.level}
+                      {currentGig.seller.level || 'New Seller'}
                     </Badge>
                   </div>
                 </div>
@@ -178,25 +178,25 @@ export function GigDetail({ gigId, gig, onBack }: GigDetailProps) {
                 <Card className="border-zinc-800 bg-zinc-900 p-6">
                   <div className="mb-4 flex items-center gap-4">
                     <Avatar className="h-20 w-20">
-                      <AvatarImage src={currentGig.seller.avatar} alt={currentGig.seller.name} />
-                      <AvatarFallback>{currentGig.seller.name[0]}</AvatarFallback>
+                      <AvatarImage src={currentGig.seller.avatar || currentGig.seller.image || ''} alt={currentGig.seller.name || 'Seller'} />
+                      <AvatarFallback>{(currentGig.seller.name || 'S')[0].toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="text-white">{currentGig.seller.name}</h3>
-                      <p className="text-gray-400">@{currentGig.seller.username}</p>
+                      <h3 className="text-white">{currentGig.seller.name || 'Unknown Seller'}</h3>
+                      <p className="text-gray-400">@{currentGig.seller.username || currentGig.seller.name || 'seller'}</p>
                       <Badge variant="outline" className="mt-2 border-emerald-600 text-emerald-400">
-                        {currentGig.seller.level}
+                        {currentGig.seller.level || 'New Seller'}
                       </Badge>
                     </div>
                   </div>
                   <p className="text-gray-300 mb-4">
-                    Professional {currentGig.category.toLowerCase()} expert with {currentGig.seller.reviewCount}+ completed projects.
+                    Professional expert with {currentGig.seller.reviewCount || 0}+ completed projects.
                     Dedicated to delivering high-quality work and excellent customer service.
                   </p>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-gray-400 text-sm">Total Orders</p>
-                      <p className="text-white">{currentGig.seller.reviewCount}</p>
+                      <p className="text-white">{currentGig.seller.reviewCount || 0}</p>
                     </div>
                     <div>
                       <p className="text-gray-400 text-sm">Rating</p>

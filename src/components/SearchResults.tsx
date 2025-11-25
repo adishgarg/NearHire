@@ -40,7 +40,7 @@ export function SearchResults({ gigs = mockGigs, searchQuery, query, category, o
 
   const filteredGigs = gigs.filter(gig => {
     const matchesPrice = gig.price >= priceRange[0] && gig.price <= priceRange[1];
-    const matchesLevel = selectedLevels.length === 0 || selectedLevels.includes(gig.seller.level);
+    const matchesLevel = selectedLevels.length === 0 || selectedLevels.includes(gig.seller.level || 'New Seller');
     const matchesQuery = !effectiveQuery || gig.title.toLowerCase().includes(effectiveQuery.toLowerCase()) || gig.description.toLowerCase().includes(effectiveQuery.toLowerCase());
     const matchesCategory = !category || gig.category.toLowerCase() === category.toLowerCase();
     return matchesPrice && matchesLevel && matchesQuery && matchesCategory;

@@ -7,33 +7,49 @@ import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { GigCard } from './GigCard';
-import { Star, MapPin, Calendar, Award, VerifiedIcon, MessageSquare } from 'lucide-react';
+import { Star, MapPin, Calendar, Award, VerifiedIcon, MessageSquare, DollarSign, Clock } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ProfilePageProps {
-  user?: User;
+  user: User & {
+    email?: string;
+    website?: string;
+    phone?: string;
+    totalEarnings?: number;
+    activeOrders?: number;
+    responseTime?: string;
+    lastSeen?: string;
+    isOnline?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+  };
   gigs?: Gig[];
+  reviews?: Array<{
+    rating: number;
+    comment: string;
+    createdAt: string;
+    reviewer: {
+      name: string;
+      image: string;
+    };
+  }>;
   onGigClick?: (gig: Gig) => void;
   isOwnProfile?: boolean;
 }
 
-// Default user data
-const defaultUser: User = {
-  id: '1',
-  name: 'John Doe',
-  username: 'johndoe',
-  avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
-  rating: 4.8,
-  reviewCount: 156,
-  level: 'Top Rated',
-  verified: true,
-  bio: 'Professional full-stack developer with 5+ years of experience.',
-  skills: ['React', 'Node.js', 'TypeScript', 'Python'],
-  location: 'San Francisco, CA',
-  memberSince: '2020-01-15'
-};
-
-export function ProfilePage({ user = defaultUser, gigs = [], onGigClick, isOwnProfile = false }: ProfilePageProps) {
-  const userGigs = gigs.filter(gig => gig.seller?.id === user.id);
+export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnProfile = false }: ProfilePageProps) {
+  const userGigs = gigs || [];
+  
+  // Format member since date
+  const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long'
+  }) : 'Recently joined';
+  
+  // Calculate average rating from reviews if available
+  const avgRating = reviews.length > 0 
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+    : user.rating || 0;
 
   return (
     <div className="min-h-screen bg-black">
@@ -43,8 +59,8 @@ export function ProfilePage({ user = defaultUser, gigs = [], onGigClick, isOwnPr
           <div className="flex flex-col md:flex-row gap-8">
             <div className="flex flex-col items-center md:items-start">
               <Avatar className="h-32 w-32 mb-4 border-4 border-emerald-600">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="text-3xl">{user.name[0]}</AvatarFallback>
+                <AvatarImage src={user.image || ''} alt={user.name || 'User'} />
+                <AvatarFallback className="text-3xl">{(user.name || 'U')[0].toUpperCase()}</AvatarFallback>
               </Avatar>
               {isOwnProfile && (
                 <Button variant="outline" className="border-zinc-700 text-white hover:bg-zinc-800">
@@ -62,9 +78,9 @@ export function ProfilePage({ user = defaultUser, gigs = [], onGigClick, isOwnPr
                       <VerifiedIcon className="h-6 w-6 fill-emerald-600 text-emerald-600" />
                     )}
                   </div>
-                  <p className="text-gray-400 mb-3">@{user.username}</p>
+                  <p className="text-gray-400 mb-3">@{user.username || user.email?.split('@')[0] || 'user'}</p>
                   <Badge className="bg-emerald-600/10 text-emerald-400 border-emerald-600">
-                    {user.level}
+                    {user.level || 'New Seller'}
                   </Badge>
                 </div>
                 {!isOwnProfile && (
@@ -76,8 +92,7 @@ export function ProfilePage({ user = defaultUser, gigs = [], onGigClick, isOwnPr
               </div>
 
               <p className="text-gray-300 mb-6">
-                Professional {userGigs[0]?.category || 'freelancer'} with a passion for delivering high-quality work.
-                Specialized in creating exceptional solutions for clients worldwide.
+                {user.bio || `Professional ${userGigs[0]?.category || 'freelancer'} with a passion for delivering high-quality work.`}
               </p>
 
               {/* Stats */}
@@ -87,28 +102,28 @@ export function ProfilePage({ user = defaultUser, gigs = [], onGigClick, isOwnPr
                     <Star className="h-4 w-4 text-amber-500" />
                     <span className="text-gray-400 text-sm">Rating</span>
                   </div>
-                  <p className="text-white text-xl">{user.rating.toFixed(1)}</p>
+                  <p className="text-white text-xl">{avgRating.toFixed(1)}</p>
                 </div>
                 <div className="text-center md:text-left">
                   <div className="flex items-center gap-2 mb-1">
                     <Award className="h-4 w-4 text-emerald-600" />
                     <span className="text-gray-400 text-sm">Reviews</span>
                   </div>
-                  <p className="text-white text-xl">{user.reviewCount}</p>
+                  <p className="text-white text-xl">{user.reviewCount || reviews.length}</p>
                 </div>
                 <div className="text-center md:text-left">
                   <div className="flex items-center gap-2 mb-1">
                     <MapPin className="h-4 w-4 text-blue-500" />
                     <span className="text-gray-400 text-sm">From</span>
                   </div>
-                  <p className="text-white">United States</p>
+                  <p className="text-white">{user.location || 'Not specified'}</p>
                 </div>
                 <div className="text-center md:text-left">
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar className="h-4 w-4 text-purple-500" />
                     <span className="text-gray-400 text-sm">Member since</span>
                   </div>
-                  <p className="text-white">Jan 2023</p>
+                  <p className="text-white">{memberSince}</p>
                 </div>
               </div>
             </div>
@@ -122,7 +137,7 @@ export function ProfilePage({ user = defaultUser, gigs = [], onGigClick, isOwnPr
               Active Gigs ({userGigs.length})
             </TabsTrigger>
             <TabsTrigger value="reviews" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-emerald-400">
-              Reviews ({user.reviewCount})
+              Reviews ({reviews.length})
             </TabsTrigger>
             <TabsTrigger value="about" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-emerald-400">
               About
@@ -150,31 +165,49 @@ export function ProfilePage({ user = defaultUser, gigs = [], onGigClick, isOwnPr
 
           <TabsContent value="reviews" className="mt-6">
             <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Card key={i} className="border-zinc-800 bg-zinc-900 p-6">
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={`https://images.unsplash.com/photo-${1500000000000 + i * 1000000}?w=200`} />
-                      <AvatarFallback>U{i}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-white">Client Name {i}</p>
-                        <span className="text-sm text-gray-500">2 weeks ago</span>
-                      </div>
-                      <div className="flex items-center gap-1 mb-3">
-                        {[...Array(5)].map((_, j) => (
-                          <Star key={j} className="h-4 w-4 fill-amber-500 text-amber-500" />
-                        ))}
-                      </div>
-                      <p className="text-gray-300">
-                        Outstanding work! Very professional and delivered exactly what was needed.
-                        Would definitely recommend and hire again.
-                      </p>
-                    </div>
-                  </div>
+              {reviews.length === 0 ? (
+                <Card className="border-zinc-800 bg-zinc-900 p-12 text-center">
+                  <p className="text-gray-400">No reviews yet</p>
+                  {!isOwnProfile && (
+                    <p className="text-gray-500 mt-2">Be the first to leave a review!</p>
+                  )}
                 </Card>
-              ))}
+              ) : (
+                reviews.map((review, index) => (
+                  <Card key={index} className="border-zinc-800 bg-zinc-900 p-6">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={review.reviewer.image || ''} alt={review.reviewer.name} />
+                        <AvatarFallback>{review.reviewer.name[0]?.toUpperCase() || 'U'}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-white">{review.reviewer.name}</p>
+                          <span className="text-sm text-gray-500">
+                            {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 mb-3">
+                          {[...Array(5)].map((_, j) => (
+                            <Star 
+                              key={j} 
+                              className={`h-4 w-4 ${
+                                j < review.rating 
+                                  ? 'fill-amber-500 text-amber-500' 
+                                  : 'text-gray-600'
+                              }`} 
+                            />
+                          ))}
+                          <span className="ml-2 text-sm text-gray-400">({review.rating}/5)</span>
+                        </div>
+                        <p className="text-gray-300">
+                          {review.comment}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -182,39 +215,55 @@ export function ProfilePage({ user = defaultUser, gigs = [], onGigClick, isOwnPr
             <Card className="border-zinc-800 bg-zinc-900 p-6">
               <h3 className="mb-4 text-white">About Me</h3>
               <p className="text-gray-300 mb-6 leading-relaxed">
-                I'm a professional freelancer with {user.reviewCount}+ completed projects and a {user.rating} star rating.
-                I specialize in delivering high-quality work that exceeds client expectations. My goal is to
-                help businesses grow by providing exceptional services tailored to their specific needs.
+                {user.bio || `I'm a professional freelancer with ${user.reviewCount || reviews.length}+ completed projects and a ${avgRating.toFixed(1)} star rating.
+I specialize in delivering high-quality work that exceeds client expectations.`}
               </p>
-
-              <h3 className="mb-4 text-white">Skills & Expertise</h3>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {['Web Development', 'UI/UX Design', 'React', 'TypeScript', 'Tailwind CSS', 'Node.js'].map((skill) => (
-                  <Badge
-                    key={skill}
-                    variant="outline"
-                    className="border-zinc-700 text-gray-300"
+              
+              {user.website && (
+                <div className="mb-6">
+                  <h3 className="mb-2 text-white">Website</h3>
+                  <a 
+                    href={user.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-emerald-400 hover:text-emerald-300 transition-colors"
                   >
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-
-              <h3 className="mb-4 text-white">Languages</h3>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">English</span>
-                  <Badge variant="outline" className="border-emerald-600 text-emerald-400">
-                    Native
-                  </Badge>
+                    {user.website}
+                  </a>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Spanish</span>
-                  <Badge variant="outline" className="border-zinc-700 text-gray-400">
-                    Fluent
-                  </Badge>
+              )}
+              
+              {user.phone && isOwnProfile && (
+                <div className="mb-6">
+                  <h3 className="mb-2 text-white">Phone</h3>
+                  <p className="text-gray-300">{user.phone}</p>
                 </div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {user.totalEarnings && (
+                  <div>
+                    <h3 className="mb-2 text-white">Total Earnings</h3>
+                    <p className="text-emerald-400 text-xl font-semibold">${user.totalEarnings}</p>
+                  </div>
+                )}
+                
+                {user.responseTime && (
+                  <div>
+                    <h3 className="mb-2 text-white">Avg Response Time</h3>
+                    <p className="text-gray-300">{user.responseTime}</p>
+                  </div>
+                )}
               </div>
+              
+              {user.lastSeen && (
+                <div className="mt-6">
+                  <h3 className="mb-2 text-white">Last Active</h3>
+                  <p className="text-gray-300">
+                    {formatDistanceToNow(new Date(user.lastSeen), { addSuffix: true })}
+                  </p>
+                </div>
+              )}
             </Card>
           </TabsContent>
         </Tabs>

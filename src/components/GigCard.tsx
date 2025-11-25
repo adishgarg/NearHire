@@ -54,15 +54,15 @@ export function GigCard({ gig, onClick }: GigCardProps) {
         {/* Seller Info */}
         <div className="mb-3 flex items-center gap-2">
           <Avatar className="h-6 w-6">
-            <AvatarImage src={gig.seller.avatar} alt={gig.seller.name} />
-            <AvatarFallback>{gig.seller.name[0]}</AvatarFallback>
+            <AvatarImage src={gig.seller.avatar || gig.seller.image || ''} alt={gig.seller.name || 'Seller'} />
+            <AvatarFallback>{(gig.seller.name || 'S')[0].toUpperCase()}</AvatarFallback>
           </Avatar>
-          <span className="text-sm text-gray-400">{gig.seller.username}</span>
+          <span className="text-sm text-gray-400">{gig.seller.username || gig.seller.name}</span>
           {gig.seller.verified && (
             <VerifiedIcon className="h-4 w-4 fill-emerald-600 text-emerald-600" />
           )}
           <Badge variant="outline" className="ml-auto border-emerald-600 text-emerald-400 text-xs">
-            {gig.seller.level}
+            {gig.seller.level || 'New Seller'}
           </Badge>
         </div>
 
