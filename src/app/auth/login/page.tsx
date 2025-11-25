@@ -9,12 +9,14 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Github, Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -24,6 +26,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
     
     try {
       const result = await signIn('credentials', {
@@ -35,9 +38,11 @@ export default function LoginPage() {
       if (result?.ok) {
         router.push('/dashboard');
       } else {
-        console.error('Login failed');
+        setError('Invalid email or password. Please try again.');
+        console.error('Login failed:', result?.error);
       }
     } catch (error) {
+      setError('Network error. Please try again.');
       console.error('Login error:', error);
     } finally {
       setIsLoading(false);
@@ -175,6 +180,14 @@ export default function LoginPage() {
                 Forgot password?
               </Link>
             </div>
+
+            {error && (
+              <Alert variant="destructive" className="border-red-500/20 bg-red-500/10">
+                <AlertDescription className="text-red-400">
+                  {error}
+                </AlertDescription>
+              </Alert>
+            )}
 
             <Button
               type="submit"

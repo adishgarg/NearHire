@@ -1,38 +1,25 @@
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
+import Credentials from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
 
 // Helper function to get Prisma client safely
 async function getPrismaClient() {
   try {
-    const { PrismaClient } = await import('@prisma/client')
+    console.log('🔄 Initializing Prisma v5 client...')
     
-    // For Prisma v7, we need to provide either adapter or accelerateUrl
+    const { PrismaClient } = await import('@prisma/client')
     const prisma = new PrismaClient({
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-      // Using accelerateUrl if available, otherwise fall back to basic configuration
-      ...(process.env.ACCELERATE_URL ? { accelerateUrl: process.env.ACCELERATE_URL } : {})
     })
     
-    // Test the connection
     await prisma.$connect()
-    console.log('✅ Prisma client initialized and connected successfully')
+    console.log('✅ Prisma client connected successfully')
     return prisma
   } catch (error) {
     console.error('❌ Failed to initialize Prisma client:', error)
-    
-    // Fallback: Try with minimal configuration
-    try {
-      console.log('🔄 Trying fallback Prisma client configuration...')
-      const { PrismaClient } = await import('@prisma/client')
-      const prisma = new PrismaClient()
-      await prisma.$connect()
-      console.log('✅ Fallback Prisma client connected successfully')
-      return prisma
-    } catch (fallbackError) {
-      console.error('❌ Fallback Prisma client also failed:', fallbackError)
-      throw fallbackError
-    }
+    throw error
   }
 }
 
@@ -51,6 +38,54 @@ export const {
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
     }),
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Missing email or password")
+        }
+
+        try {
+          const prisma = await getPrismaClient()
+          
+          // Find user by email
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email as string }
+          })
+
+          if (!user || !user.password) {
+            throw new Error("Invalid email or password")
+          }
+
+          // Verify password
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          )
+
+          if (!isPasswordValid) {
+            throw new Error("Invalid email or password")
+          }
+
+          console.log('✅ Credentials authentication successful:', user.email)
+          
+          // Return user object that will be saved in JWT
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          }
+        } catch (error) {
+          console.error('❌ Credentials authentication failed:', error)
+          throw new Error("Authentication failed")
+        }
+      },
+    }),
   ],
   pages: {
     signIn: "/auth/login",
@@ -61,14 +96,16 @@ export const {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      console.log('🔄 SignIn callback started:', { 
-        user: user.email, 
-        provider: account?.provider,
-        profile: profile?.name 
-      })
+      console.log('🚀 =================================')
+      console.log('🚀 SIGNIN CALLBACK TRIGGERED')
+      console.log('🚀 User:', JSON.stringify(user, null, 2))
+      console.log('🚀 Account:', JSON.stringify(account, null, 2))
+      console.log('🚀 Window check:', typeof window)
+      console.log('🚀 =================================')
       
       // Create/update user in database (server-side only)
       if (typeof window === 'undefined' && user.email) {
+        console.log('✅ Server-side check passed, proceeding with database operation...')
         let prisma
         try {
           console.log('🔄 Initializing Prisma client for user creation...')
@@ -89,14 +126,14 @@ export const {
             },
           })
           
-          console.log('✅ User successfully saved to database:', { 
+          console.log('🎉 SUCCESS! User successfully saved to database:', { 
             id: savedUser.id, 
             email: savedUser.email,
             name: savedUser.name
           })
           
         } catch (error) {
-          console.error('❌ Error in signIn user creation:', {
+          console.error('💥 ERROR in signIn user creation:', {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
             userEmail: user.email
@@ -112,6 +149,12 @@ export const {
             }
           }
         }
+      } else {
+        console.log('❌ Server-side check failed:', {
+          windowType: typeof window,
+          userEmail: user.email,
+          hasEmail: !!user.email
+        })
       }
       
       return true
@@ -183,6 +226,59 @@ export const {
       else if (new URL(url).origin === baseUrl) return url
       return `${baseUrl}/dashboard`
     },
+  },
+  
+  events: {
+    async signIn({ user, account, profile, isNewUser }) {
+      console.log('🎯 =================================')
+      console.log('🎯 EVENTS.SIGNIN TRIGGERED')
+      console.log('🎯 User:', user.email)
+      console.log('🎯 IsNewUser:', isNewUser)
+      console.log('🎯 Account Provider:', account?.provider)
+      console.log('🎯 =================================')
+      
+      if (user.email) {
+        let prisma
+        try {
+          console.log('🎯 Events: Initializing Prisma for user creation...')
+          prisma = await getPrismaClient()
+          const savedUser = await prisma.user.upsert({
+            where: { email: user.email },
+            update: { 
+              name: user.name || null, 
+              image: user.image || null 
+            },
+            create: {
+              email: user.email,
+              name: user.name || null,
+              image: user.image || null,
+              emailVerified: new Date(),
+            },
+          })
+          console.log('🎯 SUCCESS! User created via events:', {
+            id: savedUser.id,
+            email: savedUser.email,
+            name: savedUser.name
+          })
+        } catch (error) {
+          console.error('🎯 Events error:', {
+            error: error instanceof Error ? error.message : String(error),
+            userEmail: user.email
+          })
+        } finally {
+          if (prisma) {
+            try {
+              await prisma.$disconnect()
+              console.log('🎯 Events: Prisma disconnected')
+            } catch (disconnectError) {
+              console.error('🎯 Events: Disconnect error:', disconnectError)
+            }
+          }
+        }
+      } else {
+        console.log('🎯 Events: No user email found')
+      }
+    }
   },
   debug: process.env.NODE_ENV === 'development',
 })

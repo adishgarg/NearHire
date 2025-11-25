@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Github, Mail, Eye, EyeOff, ArrowLeft, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,7 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -29,23 +31,55 @@ export default function SignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      setError('Passwords do not match');
       return;
     }
     if (!acceptTerms) {
-      alert('Please accept the terms and conditions');
+      setError('Please accept the terms and conditions');
       return;
     }
     
     setIsLoading(true);
     
     try {
-      // Here you would typically call your API to create the user
-      // For now, we'll just redirect to login
-      console.log('Signup data:', formData);
-      router.push('/auth/login?message=Account created successfully');
+      // Register user
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Something went wrong');
+        return;
+      }
+
+      // Automatically sign in after successful registration
+      const signInResult = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false
+      });
+
+      if (signInResult?.error) {
+        setError('Account created but sign in failed. Please try logging in manually.');
+        // Redirect to login page
+        setTimeout(() => router.push('/auth/signin'), 2000);
+      } else {
+        // Success - redirect to dashboard
+        router.push('/dashboard');
+      }
     } catch (error) {
+      setError('Network error. Please try again.');
       console.error('Signup error:', error);
     } finally {
       setIsLoading(false);
@@ -292,6 +326,14 @@ export default function SignUpPage() {
                 </Link>
               </div>
             </div>
+
+            {error && (
+              <Alert variant="destructive" className="border-red-500/20 bg-red-500/10">
+                <AlertDescription className="text-red-400">
+                  {error}
+                </AlertDescription>
+              </Alert>
+            )}
 
             <Button
               type="submit"
