@@ -33,30 +33,31 @@ export const {
         profile: profile?.name 
       })
       
-      // Create/update user in database (only during runtime)
-      if (process.env.NODE_ENV !== 'production' || typeof window === 'undefined') {
+      // Create/update user in database (server-side only, all environments)
+      if (typeof window === 'undefined' && user.email) {
         try {
-          if (user.email) {
-            const { PrismaClient } = await import('@prisma/client')
-            const prisma = new PrismaClient()
-            await prisma.user.upsert({
-              where: { email: user.email },
-              update: {
-                name: user.name,
-                image: user.image,
-              },
-              create: {
-                email: user.email,
-                name: user.name,
-                image: user.image,
-                emailVerified: new Date(),
-              },
-            })
-            await prisma.$disconnect()
-          }
+          const { PrismaClient } = await import('@prisma/client')
+          const prisma = new PrismaClient()
+          
+          const savedUser = await prisma.user.upsert({
+            where: { email: user.email },
+            update: {
+              name: user.name,
+              image: user.image,
+            },
+            create: {
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              emailVerified: new Date(),
+            },
+          })
+          
+          console.log('✅ User saved to database:', { id: savedUser.id, email: savedUser.email })
+          await prisma.$disconnect()
         } catch (error) {
-          console.error('Error saving user to database:', error)
-          // Don't fail login if database save fails
+          console.error('❌ Error saving user to database:', error)
+          // Don't fail login if database save fails, but log it clearly
         }
       }
       
@@ -66,22 +67,23 @@ export const {
       if (token.sub && session.user) {
         session.user.id = token.sub
         
-        // Get user data from database (only during runtime)
-        if (typeof window === 'undefined') {
+        // Get user data from database (server-side only)
+        if (typeof window === 'undefined' && session.user.email) {
           try {
-            if (session.user.email) {
-              const { PrismaClient } = await import('@prisma/client')
-              const prisma = new PrismaClient()
-              const dbUser = await prisma.user.findUnique({
-                where: { email: session.user.email }
-              })
-              if (dbUser) {
-                session.user.id = dbUser.id
-              }
-              await prisma.$disconnect()
+            const { PrismaClient } = await import('@prisma/client')
+            const prisma = new PrismaClient()
+            const dbUser = await prisma.user.findUnique({
+              where: { email: session.user.email }
+            })
+            if (dbUser) {
+              session.user.id = dbUser.id
+              console.log('✅ Found user in database:', { id: dbUser.id, email: dbUser.email })
+            } else {
+              console.log('⚠️ User not found in database:', session.user.email)
             }
+            await prisma.$disconnect()
           } catch (error) {
-            console.error('Error fetching user from database:', error)
+            console.error('❌ Error fetching user from database:', error)
           }
         }
       }
