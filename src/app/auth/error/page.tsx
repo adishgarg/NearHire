@@ -1,11 +1,12 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, ArrowLeft } from 'lucide-react'
 
-export default function AuthError() {
+function ErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
 
@@ -72,7 +73,7 @@ export default function AuthError() {
           </p>
         </div>
         
-        <div className="space-y-4 p-6">{/* Rest of content */}
+        <div className="space-y-4 p-6">
           {error === 'OAuthAccountNotLinked' || error === 'OAuthCreateAccount' ? (
             <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
               <p className="text-amber-300 text-sm">
@@ -117,5 +118,17 @@ export default function AuthError() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AuthError() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-black to-zinc-900 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <ErrorContent />
+    </Suspense>
   )
 }
