@@ -1,8 +1,6 @@
 import NextAuth from "next-auth"
-// import { PrismaAdapter } from "@auth/prisma-adapter"
 import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
-// import { prisma } from "@/lib/prisma"
 
 export const {
   handlers,
@@ -10,7 +8,6 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
-  // adapter: PrismaAdapter(prisma),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -33,7 +30,6 @@ export const {
     },
   },
   pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
+    signIn: "/auth/login",
   },
 })

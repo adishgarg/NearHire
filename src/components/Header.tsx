@@ -15,7 +15,7 @@ import { Badge } from './ui/badge';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 
 interface HeaderProps {
   onSearch?: (query: string) => void;
@@ -173,7 +173,10 @@ export function Header({ onSearch }: HeaderProps) {
                       Switch to Selling
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-zinc-800" />
-                    <DropdownMenuItem className="text-red-400 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
+                    <DropdownMenuItem 
+                      className="text-red-400 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer"
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                    >
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
