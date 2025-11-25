@@ -55,9 +55,30 @@ export default function SignUpPage() {
   const handleOAuthSignIn = async (provider: string) => {
     setIsLoading(true);
     try {
-      await signIn(provider, { callbackUrl: '/dashboard' });
+      const result = await signIn(provider, { 
+        callbackUrl: '/dashboard',
+        redirect: false // Don't redirect immediately
+      });
+      
+      if (result?.error) {
+        // Handle specific errors
+        if (result.error === 'OAuthAccountNotLinked' || result.error === 'OAuthCreateAccount') {
+          // Redirect to error page with specific error
+          router.push(`/auth/error?error=${result.error}`);
+        } else {
+          // Redirect to error page with generic error
+          router.push(`/auth/error?error=${result.error}`);
+        }
+      } else if (result?.url) {
+        // Success - redirect to dashboard
+        window.location.href = result.url;
+      } else if (result?.ok) {
+        // Success but no URL, redirect manually
+        router.push('/dashboard');
+      }
     } catch (error) {
-      console.error('OAuth error:', error);
+      console.error('OAuth signup error:', error);
+      router.push('/auth/error?error=OAuthSignin');
     } finally {
       setIsLoading(false);
     }

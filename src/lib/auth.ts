@@ -18,18 +18,33 @@ export const {
       clientSecret: process.env.GITHUB_SECRET!,
     }),
   ],
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/error",
+  },
   callbacks: {
-    session({ session, token }) {
+    async signIn({ user, account, profile }) {
+      // Always allow sign in - this handles both new users and existing users
+      return true
+    },
+    async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.sub
       }
       return session
     },
-    jwt({ token }) {
+    async jwt({ token, account, user }) {
+      if (account) {
+        token.accessToken = account.access_token
+      }
       return token
     },
   },
-  pages: {
-    signIn: "/auth/login",
+  session: {
+    strategy: "jwt",
   },
+  // Make URL dynamic based on environment
+  ...(process.env.NODE_ENV === 'production' && {
+    redirectProxyUrl: process.env.NEXTAUTH_URL || 'https://near-hire.vercel.app'
+  })
 })
