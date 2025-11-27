@@ -14,7 +14,7 @@ export default function Home() {
       <Hero />
       
       {/* Categories Section */}
-      <section className="py-16 px-4">
+      <section id="categories" className="py-16 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-white mb-8 text-center">
             Browse Categories
@@ -28,7 +28,7 @@ export default function Home() {
       </section>
 
       {/* Featured Gigs Section */}
-      <section className="py-16 px-4">
+      <section id="explore" className="py-16 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-white mb-8 text-center">
             Featured Services
