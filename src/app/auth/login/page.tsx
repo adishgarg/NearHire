@@ -52,23 +52,14 @@ export default function LoginPage() {
   const handleOAuthSignIn = async (provider: string) => {
     setIsLoading(true);
     try {
-      const result = await signIn(provider, { 
-        callbackUrl: '/dashboard',
-        redirect: false // Don't redirect immediately
+      console.log(`🔄 Starting ${provider} OAuth sign-in...`);
+      
+      await signIn(provider, { 
+        callbackUrl: '/dashboard'
       });
       
-      if (result?.error) {
-        // Redirect to error page with specific error
-        router.push(`/auth/error?error=${result.error}`);
-      } else if (result?.url) {
-        // Success - redirect to dashboard
-        window.location.href = result.url;
-      } else if (result?.ok) {
-        // Success but no URL, redirect manually
-        router.push('/dashboard');
-      }
     } catch (error) {
-      console.error('OAuth login error:', error);
+      console.error(`💥 ${provider} OAuth login error:`, error);
       router.push('/auth/error?error=OAuthSignin');
     } finally {
       setIsLoading(false);

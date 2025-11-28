@@ -10,6 +10,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "ERD.svg"
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String  @map("user_id")
@@ -51,6 +56,11 @@ model User {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   
+  // Role and onboarding
+  role            UserRole? @map("user_role")
+  onboardingCompleted Boolean @default(false) @map("onboarding_completed")
+  profileCompleted Boolean @default(false) @map("profile_completed")
+  
   // Profile information
   bio             String?
   location        String?
@@ -58,6 +68,15 @@ model User {
   longitude       Float?
   website         String?
   phone           String?
+  
+  // Buyer specific fields
+  interests       String?   // JSON string of interests array
+  
+  // Seller specific fields  
+  skills          String?   // JSON string of skills array
+  hourlyRate      Float?    @map("hourly_rate")
+  experience      String?
+  availability    String?
   
   // Marketplace specific fields
   rating          Float     @default(0)
@@ -318,6 +337,12 @@ enum UserLevel {
   LEVEL_1
   LEVEL_2
   TOP_RATED
+}
+
+enum UserRole {
+  BUYER
+  SELLER
+  BOTH
 }
 
 enum OrderStatus {

@@ -33,10 +33,22 @@ export const {
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     }),
     GitHub({
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
+      authorization: {
+        params: {
+          scope: "read:user user:email"
+        }
+      }
     }),
     Credentials({
       name: "credentials",
@@ -221,9 +233,15 @@ export const {
     },
     async redirect({ url, baseUrl }) {
       console.log('Redirect callback:', { url, baseUrl })
-      // Always redirect to dashboard after successful login
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      else if (new URL(url).origin === baseUrl) return url
+      
+      // If redirecting to a specific URL, allow it
+      if (url.startsWith("/") && !url.startsWith("/dashboard")) {
+        return `${baseUrl}${url}`
+      } else if (new URL(url).origin === baseUrl && !url.includes("/dashboard")) {
+        return url
+      }
+      
+      // For dashboard redirects, we'll handle onboarding checks in the dashboard page itself
       return `${baseUrl}/dashboard`
     },
   },

@@ -1,40 +1,43 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
+import { PrismaClient } from '@prisma/client';
 
-import { useSession } from 'next-auth/react';
-import { SellerDashboard } from '@/components/SellerDashboard';
-import { PageLayout } from '@/components/PageLayout';
+const prisma = new PrismaClient();
 
-export default function DashboardPage() {
-  const { data: session, status } = useSession();
-
-  if (status === 'loading') {
-    return (
-      <PageLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-white">Loading...</div>
-        </div>
-      </PageLayout>
-    );
+export default async function DashboardPage() {
+  const session = await auth();
+  
+  if (!session?.user?.email) {
+    redirect('/login');
   }
 
-  if (!session) {
-    return (
-      <PageLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <h1 className="text-2xl text-white mb-4">Please sign in</h1>
-            <a href="/auth/login" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded">
-              Sign In
-            </a>
-          </div>
-        </div>
-      </PageLayout>
-    );
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  });
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  // If onboarding is not completed, redirect to onboarding
+  if (!(user as any).onboardingCompleted) {
+    redirect('/onboarding');
   }
 
   return (
-    <PageLayout>
-      <SellerDashboard />
-    </PageLayout>
+    <div className="min-h-screen bg-black text-white">
+      <div className="container mx-auto py-12">
+        <h1 className="text-3xl font-bold mb-8">
+          Welcome to your Dashboard, {user.name}!
+        </h1>
+        
+        <div className="bg-zinc-900 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold mb-4">Your Role</h2>
+          <p className="text-zinc-300">
+            You are registered as a <span className="text-emerald-400">{(user as any).role?.toLowerCase()}</span>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
