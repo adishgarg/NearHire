@@ -62,13 +62,14 @@ export async function POST(request: NextRequest) {
     const { action } = await request.json();
     
     if (action === 'cleanup') {
-      // Delete orphaned gigs (gigs without valid sellers)
-      const orphanedGigs = await prisma.gig.findMany({
-        where: {
-          seller: null
-        },
-        select: { id: true, title: true, sellerId: true }
+      // Find gigs where seller doesn't exist (orphaned gigs)
+      const allGigs = await prisma.gig.findMany({
+        include: {
+          seller: true
+        }
       });
+      
+      const orphanedGigs = allGigs.filter(gig => !gig.seller);
 
       if (orphanedGigs.length > 0) {
         await prisma.gig.deleteMany({
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: true,
           message: `Deleted ${orphanedGigs.length} orphaned gigs`,
-          deletedGigs: orphanedGigs
+          deletedGigs: orphanedGigs.map(g => ({ id: g.id, title: g.title, sellerId: g.sellerId }))
         });
       } else {
         return NextResponse.json({
