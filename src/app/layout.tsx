@@ -27,8 +27,12 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen`}
+        suppressHydrationWarning={true}
       >
-        <SessionProvider>
+        <SessionProvider
+          refetchInterval={0}
+          refetchOnWindowFocus={false}
+        >
           {children}
         </SessionProvider>
       </body>

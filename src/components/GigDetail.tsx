@@ -85,9 +85,10 @@ export function GigDetail({ gigId, gig, onBack }: GigDetailProps) {
             {/* Gig Images */}
             <div className="mb-8">
               <ImageWithFallback
-                src={currentGig.image}
+                src={currentGig.image || ((currentGig as any).images && (currentGig as any).images[0]) || ''}
                 alt={currentGig.title}
                 className="w-full rounded-lg"
+                fallbackSrc="https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&h=400&fit=crop"
               />
             </div>
 

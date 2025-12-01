@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { RoleSelection } from './RoleSelection';
 import { BuyerProfile } from './BuyerProfile';
 import { SellerProfile } from './SellerProfile';
@@ -39,6 +40,7 @@ interface SellerProfileData {
 
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const { data: session, update } = useSession();
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('role');
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [buyerData, setBuyerData] = useState<BuyerProfileData | null>(null);
@@ -124,7 +126,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         if (onComplete) {
           onComplete();
         } else {
-          window.location.href = '/profile';
+          router.push('/profile');
         }
       } else {
         console.error('❌ Failed to save onboarding data:', responseData);

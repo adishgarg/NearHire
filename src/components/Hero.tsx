@@ -17,7 +17,7 @@ export function Hero({ onSearch }: HeroProps) {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/marketplace?search=${encodeURIComponent(searchQuery.trim())}`);
       onSearch?.(searchQuery);
     }
   };
@@ -50,14 +50,35 @@ export function Hero({ onSearch }: HeroProps) {
             </div>
           </form>
 
+          {/* Action Buttons */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+            <Button 
+              onClick={() => router.push('/marketplace')}
+              variant="outline" 
+              size="lg"
+              className="border-emerald-600 text-emerald-400 hover:bg-emerald-600 hover:text-white"
+            >
+              Browse All Services
+            </Button>
+            <Button 
+              onClick={() => router.push('/gigs/create')}
+              variant="ghost" 
+              size="lg"
+              className="text-zinc-300 hover:text-white hover:bg-zinc-800"
+            >
+              Start Selling
+            </Button>
+          </div>
+
           {/* Popular Searches */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
             <span className="text-gray-400 text-sm">Popular:</span>
             {['Logo Design', 'WordPress', 'Video Editing', 'AI Services', 'Social Media'].map((tag) => (
               <Button
                 key={tag}
                 variant="outline"
                 size="sm"
+                onClick={() => router.push(`/marketplace?search=${encodeURIComponent(tag)}`)}
                 className="border-zinc-700 bg-transparent text-gray-300 hover:bg-zinc-800 hover:text-white"
               >
                 {tag}

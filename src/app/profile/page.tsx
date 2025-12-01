@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ProfilePage } from '@/components/ProfilePage';
@@ -32,18 +32,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    
-    if (!session) {
-      router.push('/auth/login');
-      return;
-    }
-
-    fetchProfileData();
-  }, [session, status, router]);
-
-  const fetchProfileData = async () => {
+  const fetchProfileData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -62,7 +51,18 @@ export default function Profile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // Empty dependency array since this function doesn't depend on any props or state
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session) {
+      router.push('/auth/login');
+      return;
+    }
+
+    fetchProfileData();
+  }, [session, status, router, fetchProfileData]);
 
   if (status === 'loading' || loading) {
     return (

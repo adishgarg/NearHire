@@ -33,7 +33,7 @@ export function GigCard({ gig, onClick }: GigCardProps) {
       {/* Gig Image */}
       <div className="relative h-48 overflow-hidden">
         <ImageWithFallback
-          src={gig.image}
+          src={gig.image || ((gig as any).images && (gig as any).images[0]) || ''}
           alt={gig.title}
           className="h-full w-full object-cover transition-transform group-hover:scale-105"
         />
@@ -54,15 +54,15 @@ export function GigCard({ gig, onClick }: GigCardProps) {
         {/* Seller Info */}
         <div className="mb-3 flex items-center gap-2">
           <Avatar className="h-6 w-6">
-            <AvatarImage src={gig.seller.avatar || gig.seller.image || ''} alt={gig.seller.name || 'Seller'} />
-            <AvatarFallback>{(gig.seller.name || 'S')[0].toUpperCase()}</AvatarFallback>
+            <AvatarImage src={gig.seller?.avatar || gig.seller?.image || ''} alt={gig.seller?.name || 'Seller'} />
+            <AvatarFallback>{(gig.seller?.name || 'S')[0].toUpperCase()}</AvatarFallback>
           </Avatar>
-          <span className="text-sm text-gray-400">{gig.seller.username || gig.seller.name}</span>
-          {gig.seller.verified && (
+          <span className="text-sm text-gray-400">{gig.seller?.username || gig.seller?.name || 'Unknown Seller'}</span>
+          {gig.seller?.verified && (
             <VerifiedIcon className="h-4 w-4 fill-emerald-600 text-emerald-600" />
           )}
           <Badge variant="outline" className="ml-auto border-emerald-600 text-emerald-400 text-xs">
-            {gig.seller.level || 'New Seller'}
+            {gig.seller?.level || 'New Seller'}
           </Badge>
         </div>
 

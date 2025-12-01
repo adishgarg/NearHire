@@ -61,6 +61,11 @@ export function Header({ onSearch }: HeaderProps) {
             
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-6">
+              <Link href="/marketplace">
+                <Button variant="ghost" className="text-gray-300 hover:text-white">
+                  Browse Services
+                </Button>
+              </Link>
               <a 
                 href="/#explore" 
                 onClick={(e) => handleSmoothScroll(e, 'explore')}
@@ -102,6 +107,16 @@ export function Header({ onSearch }: HeaderProps) {
             ) : session ? (
               // Authenticated user
               <>
+                {/* Sell Services Button */}
+                <Link href="/gigs/create">
+                  <Button 
+                    size="sm" 
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white border-none hidden sm:inline-flex"
+                  >
+                    Sell Services
+                  </Button>
+                </Link>
+
                 {/* Notifications */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -169,23 +184,26 @@ export function Header({ onSearch }: HeaderProps) {
                       className="text-gray-300 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer"
                       onClick={() => router.push('/dashboard')}
                     >
-                      My Gigs
+                      Dashboard
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       className="text-gray-300 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer"
                       onClick={() => router.push('/orders')}
                     >
-                      Orders
+                      My Orders
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-gray-300 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
-                      Settings
+                    <DropdownMenuItem 
+                      className="text-gray-300 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer"
+                      onClick={() => router.push('/gigs/manage')}
+                    >
+                      My Services
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-zinc-800" />
                     <DropdownMenuItem 
                       className="text-gray-300 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer"
-                      onClick={() => router.push('/dashboard')}
+                      onClick={() => router.push('/settings')}
                     >
-                      Switch to Selling
+                      Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-zinc-800" />
                     <DropdownMenuItem 

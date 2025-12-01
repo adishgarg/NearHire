@@ -189,9 +189,22 @@ export function SearchResults({ gigs = mockGigs, searchQuery, query, category, o
               </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {sortedGigs.map((gig) => (
-                  <GigCard key={gig.id} gig={gig} onClick={() => handleGigClick(gig)} />
-                ))}
+                {sortedGigs.map((gig) => {
+                  // If seller data is missing, create mock seller
+                  const gigWithSeller = gig.seller ? gig : {
+                    ...gig,
+                    seller: {
+                      id: 'unknown',
+                      name: 'Unknown Seller',
+                      image: null,
+                      rating: 0,
+                      reviewCount: 0,
+                      verified: false,
+                      level: 'New Seller'
+                    }
+                  };
+                  return <GigCard key={gig.id} gig={gigWithSeller} onClick={() => handleGigClick(gigWithSeller)} />;
+                })}
               </div>
             )}
           </div>

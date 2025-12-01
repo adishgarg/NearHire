@@ -156,9 +156,22 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
               </Card>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {userGigs.map((gig) => (
-                  <GigCard key={gig.id} gig={gig} onClick={() => onGigClick?.(gig)} />
-                ))}
+                {userGigs.map((gig) => {
+                  // If seller data is missing, create mock seller
+                  const gigWithSeller = gig.seller ? gig : {
+                    ...gig,
+                    seller: {
+                      id: 'unknown',
+                      name: 'Unknown Seller',
+                      image: null,
+                      rating: 0,
+                      reviewCount: 0,
+                      verified: false,
+                      level: 'New Seller'
+                    }
+                  };
+                  return <GigCard key={gig.id} gig={gigWithSeller} onClick={() => onGigClick?.(gigWithSeller)} />;
+                })}
               </div>
             )}
           </TabsContent>

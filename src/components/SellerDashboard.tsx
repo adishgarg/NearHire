@@ -166,9 +166,22 @@ export function SellerDashboard({ gigs = mockGigs, onGigClick, onCreateGig }: Se
 
                 <TabsContent value="active">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    {gigs.slice(0, 4).map((gig) => (
-                      <GigCard key={gig.id} gig={gig} onClick={() => handleGigClick(gig)} />
-                    ))}
+                    {gigs.slice(0, 4).map((gig) => {
+                      // If seller data is missing, create mock seller
+                      const gigWithSeller = gig.seller ? gig : {
+                        ...gig,
+                        seller: {
+                          id: 'unknown',
+                          name: 'Unknown Seller',
+                          image: null,
+                          rating: 0,
+                          reviewCount: 0,
+                          verified: false,
+                          level: 'New Seller'
+                        }
+                      };
+                      return <GigCard key={gig.id} gig={gigWithSeller} onClick={() => handleGigClick(gigWithSeller)} />;
+                    })}
                   </div>
                 </TabsContent>
 

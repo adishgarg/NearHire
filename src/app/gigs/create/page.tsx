@@ -1,12 +1,5 @@
-'use client';
-
-import { CreateGigPage } from '@/components/CreateGigPage';
-import { PageLayout } from '@/components/PageLayout';
+import { CreateGigFlow } from '@/components/gigs/CreateGigFlow';
 
 export default function CreateGig() {
-  return (
-    <PageLayout>
-      <CreateGigPage />
-    </PageLayout>
-  );
+  return <CreateGigFlow />;
 }

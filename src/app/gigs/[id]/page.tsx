@@ -1,7 +1,4 @@
-'use client';
-
-import { GigDetail } from '@/components/GigDetail';
-import { PageLayout } from '@/components/PageLayout';
+import { GigDetailPage } from '@/components/gigs/GigDetailPage';
 
 interface GigPageProps {
   params: {
@@ -10,9 +7,5 @@ interface GigPageProps {
 }
 
 export default function GigPage({ params }: GigPageProps) {
-  return (
-    <PageLayout>
-      <GigDetail gigId={params.id} />
-    </PageLayout>
-  );
+  return <GigDetailPage />;
 }

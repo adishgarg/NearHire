@@ -57,6 +57,17 @@ export async function GET(request: NextRequest) {
                 name: true,
                 slug: true
               }
+            },
+            seller: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                rating: true,
+                reviewCount: true,
+                verified: true,
+                level: true
+              }
             }
           },
           where: {
