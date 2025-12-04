@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { FileUpload } from '@/components/FileUpload';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -31,6 +32,7 @@ export function CreateGigPage() {
   const [deliveryTime, setDeliveryTime] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
+  const [images, setImages] = useState<Array<{url: string; publicId: string}>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddTag = () => {
@@ -56,7 +58,7 @@ export function CreateGigPage() {
         basicDescription: description,
         basicDeliveryTime: Number(deliveryTime),
         basicRevisions: 1,
-        images: [] // Add image upload functionality later
+        images: images.map(img => img.url)
       };
 
       const response = await fetch('/api/gigs', {
@@ -237,11 +239,12 @@ export function CreateGigPage() {
             <Card className="border-zinc-800 bg-zinc-900 p-6">
               <h2 className="mb-6 text-white">Gallery</h2>
               
-              <div className="border-2 border-dashed border-zinc-700 rounded-lg p-12 text-center hover:border-emerald-600 transition-colors cursor-pointer">
-                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-300 mb-2">Click to upload or drag and drop</p>
-                <p className="text-sm text-gray-500">PNG, JPG up to 5MB</p>
-              </div>
+              <FileUpload
+                onUpload={setImages}
+                maxFiles={5}
+                folder="gigs"
+                existingFiles={images}
+              />
             </Card>
           </div>
 
@@ -252,8 +255,16 @@ export function CreateGigPage() {
                 <h3 className="mb-4 text-white">Preview</h3>
                 
                 <div className="space-y-4">
-                  <div className="bg-zinc-800 rounded-lg h-48 flex items-center justify-center">
-                    <p className="text-gray-500">Gig image preview</p>
+                  <div className="bg-zinc-800 rounded-lg h-48 flex items-center justify-center overflow-hidden">
+                    {images.length > 0 ? (
+                      <img 
+                        src={images[0].url} 
+                        alt="Gig preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <p className="text-gray-500">Gig image preview</p>
+                    )}
                   </div>
                   
                   <div>

@@ -35,23 +35,33 @@ export function FileUpload({
   const [dragActive, setDragActive] = useState(false);
 
   const uploadFile = async (file: File): Promise<UploadedFile> => {
+    console.log('📤 Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+    
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', folder);
 
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      console.error('Upload failed:', response.status, errorData);
-      throw new Error(errorData.error || `Upload failed with status ${response.status}`);
+      console.log('📡 Upload response status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('❌ Upload failed:', response.status, errorData);
+        throw new Error(errorData.error || `Upload failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Upload success:', result);
+      return result.data;
+    } catch (error) {
+      console.error('💥 Upload file error:', error);
+      throw error;
     }
-
-    const result = await response.json();
-    return result.data;
   };
 
   const handleFiles = async (selectedFiles: FileList) => {
@@ -119,11 +129,25 @@ export function FileUpload({
     setDragActive(false);
   };
 
+  const openFileDialog = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = acceptedTypes.join(',');
+    input.onchange = (e) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files) {
+        handleFiles(target.files);
+      }
+    };
+    input.click();
+  };
+
   return (
     <div className="space-y-4">
       {/* Upload Area */}
       <Card
-        className={`border-2 border-dashed p-8 text-center transition-colors ${
+        className={`border-2 border-dashed p-8 text-center transition-colors cursor-pointer hover:border-emerald-400 ${
           dragActive
             ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950'
             : 'border-zinc-300 dark:border-zinc-700'
@@ -131,6 +155,7 @@ export function FileUpload({
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
+        onClick={openFileDialog}
       >
         <div className="mx-auto flex max-w-sm flex-col items-center justify-center">
           <Upload className="mb-4 h-10 w-10 text-zinc-500" />
@@ -150,18 +175,9 @@ export function FileUpload({
             type="button"
             variant="outline"
             disabled={uploading || files.length >= maxFiles}
-            onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.multiple = true;
-              input.accept = acceptedTypes.join(',');
-              input.onchange = (e) => {
-                const target = e.target as HTMLInputElement;
-                if (target.files) {
-                  handleFiles(target.files);
-                }
-              };
-              input.click();
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click
+              openFileDialog();
             }}
           >
             <ImageIcon className="mr-2 h-4 w-4" />
