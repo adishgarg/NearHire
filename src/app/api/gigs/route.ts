@@ -145,6 +145,10 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
     
+    console.log('🔍 API called with filters:', { 
+      category, search, minPrice, maxPrice, deliveryTime, page, limit 
+    });
+    
     const skip = (page - 1) * limit;
 
     // Build where clause
@@ -168,43 +172,58 @@ export async function GET(request: NextRequest) {
 
     if (minPrice || maxPrice) {
       where.price = {};
-      if (minPrice) where.price.gte = parseFloat(minPrice);
-      if (maxPrice) where.price.lte = parseFloat(maxPrice);
+      if (minPrice) {
+        const min = parseFloat(minPrice);
+        where.price.gte = min;
+        console.log('📈 Min price filter:', min);
+      }
+      if (maxPrice) {
+        const max = parseFloat(maxPrice);
+        where.price.lte = max;
+        console.log('📉 Max price filter:', max);
+      }
     }
 
     if (deliveryTime) {
-      where.deliveryTime = { lte: parseInt(deliveryTime) };
+      const maxDelivery = parseInt(deliveryTime);
+      where.deliveryTime = { lte: maxDelivery };
+      console.log('⏰ Delivery time filter (lte):', maxDelivery);
     }
 
+    console.log('🔍 Final where clause:', JSON.stringify(where, null, 2));
+
     // Get gigs with filters
-    const gigs = await prisma.gig.findMany({
-      where,
-      include: {
-        category: {
-          select: {
-            name: true,
-            slug: true
+    const [gigs, totalCount] = await Promise.all([
+      prisma.gig.findMany({
+        where,
+        include: {
+          category: {
+            select: {
+              name: true,
+              slug: true
+            }
+          },
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              rating: true,
+              reviewCount: true
+            }
+          },
+          reviews: {
+            select: {
+              rating: true
+            }
           }
         },
-        seller: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            rating: true,
-            reviewCount: true
-          }
-        },
-        reviews: {
-          select: {
-            rating: true
-          }
-        }
-      },
-      skip,
-      take: limit,
-      orderBy: { createdAt: 'desc' }
-    });
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.gig.count({ where })
+    ]);
 
     // Log any gigs that don't have seller data for debugging
     const gigsWithoutSellers = gigs.filter(gig => !gig.seller);
@@ -234,9 +253,6 @@ export async function GET(request: NextRequest) {
         startingPrice: Number(gig.price)
       };
     });
-
-    // Get total count for pagination (only valid gigs)
-    const totalCount = validGigs.length;
 
     return NextResponse.json({
       gigs: gigsWithRating,

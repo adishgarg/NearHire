@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { CategoryCard } from "@/components/CategoryCard";
 import { GigCard } from "@/components/GigCard";
@@ -10,7 +9,6 @@ import { categories, featuredGigs } from "@/data/mockData";
 export default function Home() {
   return (
     <div className="min-h-screen bg-black">
-      <Header />
       <Hero />
       
       {/* Categories Section */}

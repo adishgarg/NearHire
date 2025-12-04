@@ -1,5 +1,5 @@
-import { CreateGigFlow } from '@/components/gigs/CreateGigFlow';
+import { CreateGigPage } from '@/components/gigs/creatGigPage';
 
 export default function CreateGig() {
-  return <CreateGigFlow />;
+  return <CreateGigPage />;
 }

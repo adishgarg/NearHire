@@ -76,73 +76,106 @@ export function MarketplacePage() {
     itemsPerPage: 12
   });
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState(searchParams?.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams?.get('category') || 'all');
-  const [priceRange, setPriceRange] = useState([5, 1000]);
+  const [priceRange, setPriceRange] = useState([5, 100000]);
   const [maxDeliveryTime, setMaxDeliveryTime] = useState(30);
   const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
 
   const fetchGigs = useCallback(async () => {
+    console.log('🚀 fetchGigs called with:', { currentPage, searchQuery, selectedCategory });
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page: pagination.currentPage.toString(),
-        limit: pagination.itemsPerPage.toString(),
-        ...(searchQuery && { search: searchQuery }),
-        ...(selectedCategory !== 'all' && { category: selectedCategory }),
-        minPrice: priceRange[0].toString(),
-        maxPrice: priceRange[1].toString(),
-        deliveryTime: maxDeliveryTime.toString(),
+        page: currentPage.toString(),
+        limit: '12',
       });
 
-      const response = await fetch(`/api/gigs?${params}`);
+      // Only add filters if they're not default values
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+      
+      if (selectedCategory !== 'all') {
+        params.append('category', selectedCategory);
+      }
+      
+      // Only add price filters if they're not the default range
+      if (priceRange[0] !== 5 || priceRange[1] !== 100000) {
+        params.append('minPrice', priceRange[0].toString());
+        params.append('maxPrice', priceRange[1].toString());
+      }
+      
+      // Only add delivery time filter if it's not the default
+      if (maxDeliveryTime !== 30) {
+        params.append('deliveryTime', maxDeliveryTime.toString());
+      }
+
+      const url = `/api/gigs?${params}`;
+      console.log('🌐 Marketplace fetching URL:', url);
+      console.log('📊 Current page:', currentPage);
+      console.log('🔍 Search query:', searchQuery);
+      console.log('📂 Selected category:', selectedCategory);
+
+      const response = await fetch(url);
+      console.log('📡 Response status:', response.status, response.statusText);
+      
       if (response.ok) {
         const data = await response.json();
-        console.log('Marketplace API response:', data);
-        console.log('Gigs received:', data.gigs?.length || 0);
-        console.log('First gig seller check:', data.gigs?.[0]?.seller ? 'HAS SELLER' : 'NO SELLER');
-        setGigs(data.gigs);
+        console.log('✅ Marketplace API response:', data);
+        console.log('📦 Gigs received:', data.gigs?.length || 0);
+        console.log('📊 Pagination data:', data.pagination);
+        
+        if (data.gigs?.[0]) {
+          console.log('👤 First gig seller check:', data.gigs[0].seller ? 'HAS SELLER' : 'NO SELLER');
+          console.log('🏷️ First gig title:', data.gigs[0].title);
+        }
+        
+        setGigs(data.gigs || []);
         setPagination(data.pagination);
+      } else {
+        console.error('❌ API Error:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('❌ Error body:', errorText);
       }
     } catch (error) {
-      console.error('Error fetching gigs:', error);
+      console.error('💥 Error fetching gigs:', error);
     } finally {
       setLoading(false);
     }
-  }, [pagination.currentPage, pagination.itemsPerPage, searchQuery, selectedCategory, priceRange, maxDeliveryTime]);
+  }, [currentPage, searchQuery, selectedCategory, priceRange, maxDeliveryTime]);
 
   useEffect(() => {
     fetchGigs();
   }, [fetchGigs]);
 
   const handleSearch = () => {
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setCurrentPage(1);
     fetchGigs();
   };
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setCurrentPage(1);
   };
 
   const handlePriceFilter = () => {
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
-    fetchGigs();
+    setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedCategory('all');
-    setPriceRange([5, 1000]);
+    setPriceRange([5, 100000]);
     setMaxDeliveryTime(30);
     setSortBy('newest');
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
-    fetchGigs();
+    setCurrentPage(1);
   };
 
   const changePage = (page: number) => {
-    setPagination(prev => ({ ...prev, currentPage: page }));
+    setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -268,9 +301,9 @@ export function MarketplacePage() {
                   <Slider
                     value={priceRange}
                     onValueChange={setPriceRange}
-                    max={1000}
+                    max={100000}
                     min={5}
-                    step={5}
+                    step={100}
                     className="mt-2"
                   />
                 </div>
@@ -368,8 +401,8 @@ export function MarketplacePage() {
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                disabled={pagination.currentPage <= 1}
-                onClick={() => changePage(pagination.currentPage - 1)}
+                disabled={currentPage <= 1}
+                onClick={() => changePage(currentPage - 1)}
                 className="border-zinc-700"
               >
                 Previous
@@ -378,10 +411,10 @@ export function MarketplacePage() {
               {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
                 <Button
                   key={page}
-                  variant={page === pagination.currentPage ? "default" : "outline"}
+                  variant={page === currentPage ? "default" : "outline"}
                   onClick={() => changePage(page)}
                   className={
-                    page === pagination.currentPage
+                    page === currentPage
                       ? "bg-emerald-600 hover:bg-emerald-700"
                       : "border-zinc-700"
                   }
@@ -392,8 +425,8 @@ export function MarketplacePage() {
               
               <Button
                 variant="outline"
-                disabled={pagination.currentPage >= pagination.totalPages}
-                onClick={() => changePage(pagination.currentPage + 1)}
+                disabled={currentPage >= pagination.totalPages}
+                onClick={() => changePage(currentPage + 1)}
                 className="border-zinc-700"
               >
                 Next
