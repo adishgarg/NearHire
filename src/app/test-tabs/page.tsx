@@ -8,7 +8,7 @@ export default function TestTabsPage() {
   console.log('TestTabsPage component rendered - this should only log once per navigation');
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-[#f5ecdf] text-gray-900 p-8">
       <div className="container mx-auto">
         <h1 className="text-3xl font-bold mb-8">Tab Navigation Test</h1>
         

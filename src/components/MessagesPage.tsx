@@ -131,55 +131,55 @@ export function MessagesPage() {
   const selectedConv = conversations.find(c => c.id === selectedConversation);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#f5ecdf]">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="mb-6 text-white">Messages</h1>
+        <h1 className="mb-6 text-gray-900 font-playfair text-3xl font-semibold">Messages</h1>
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Conversations List */}
-          <Card className="border-zinc-800 bg-zinc-900 lg:col-span-1">
-            <div className="p-4 border-b border-zinc-800">
+          <Card className="border-gray-200 bg-white lg:col-span-1 rounded-3xl">
+            <div className="p-4 border-b border-gray-200">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
                   placeholder="Search conversations..."
-                  className="bg-zinc-800 border-zinc-700 pl-10 text-white placeholder:text-gray-500"
+                  className="bg-white border-gray-200 pl-10 text-gray-900 placeholder:text-gray-500 rounded-full"
                 />
               </div>
             </div>
 
             <ScrollArea className="h-[600px]">
-              <div className="divide-y divide-zinc-800">
+              <div className="divide-y divide-gray-200">
                 {conversations.map((conv) => (
                   <div
                     key={conv.id}
-                    className={`p-4 cursor-pointer transition-colors hover:bg-zinc-800 ${
-                      selectedConversation === conv.id ? 'bg-zinc-800' : ''
+                    className={`p-4 cursor-pointer transition-colors hover:bg-gray-50 ${
+                      selectedConversation === conv.id ? 'bg-gray-50' : ''
                     }`}
                     onClick={() => setSelectedConversation(conv.id)}
                   >
                     <div className="flex items-start gap-3">
                       <div className="relative">
-                        <Avatar className="h-12 w-12">
+                        <Avatar className="h-12 w-12 border-2 border-gray-300">
                           <AvatarImage src={conv.user.avatar} alt={conv.user.name} />
                           <AvatarFallback>{conv.user.name[0]}</AvatarFallback>
                         </Avatar>
                         {conv.user.online && (
-                          <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-600 border-2 border-zinc-900" />
+                          <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-600 border-2 border-white" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <p className="text-white truncate">{conv.user.name}</p>
+                          <p className="text-gray-900 font-semibold truncate">{conv.user.name}</p>
                           <span className="text-xs text-gray-500">{conv.timestamp}</span>
                         </div>
-                        <p className="text-sm text-gray-400 truncate">{conv.lastMessage}</p>
+                        <p className="text-sm text-gray-600 truncate">{conv.lastMessage}</p>
                         {conv.gigTitle && (
-                          <p className="text-xs text-emerald-400 mt-1 truncate">{conv.gigTitle}</p>
+                          <p className="text-xs text-gray-500 mt-1 truncate">{conv.gigTitle}</p>
                         )}
                       </div>
                       {conv.unread > 0 && (
-                        <Badge className="bg-emerald-600 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                        <Badge className="bg-gray-900 text-white h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
                           {conv.unread}
                         </Badge>
                       )}
@@ -191,29 +191,29 @@ export function MessagesPage() {
           </Card>
 
           {/* Chat Window */}
-          <Card className="border-zinc-800 bg-zinc-900 lg:col-span-2">
+          <Card className="border-gray-200 bg-white lg:col-span-2 rounded-3xl">
             {selectedConv ? (
               <>
                 {/* Chat Header */}
-                <div className="flex items-center justify-between border-b border-zinc-800 p-4">
+                <div className="flex items-center justify-between border-b border-gray-200 p-4">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <Avatar className="h-10 w-10">
+                      <Avatar className="h-10 w-10 border-2 border-gray-300">
                         <AvatarImage src={selectedConv.user.avatar} alt={selectedConv.user.name} />
                         <AvatarFallback>{selectedConv.user.name[0]}</AvatarFallback>
                       </Avatar>
                       {selectedConv.user.online && (
-                        <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-600 border-2 border-zinc-900" />
+                        <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-600 border-2 border-white" />
                       )}
                     </div>
                     <div>
-                      <p className="text-white">{selectedConv.user.name}</p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-gray-900 font-semibold">{selectedConv.user.name}</p>
+                      <p className="text-sm text-gray-600">
                         {selectedConv.user.online ? 'Online' : 'Offline'}
                       </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+                  <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
                     <MoreVertical className="h-5 w-5" />
                   </Button>
                 </div>
@@ -227,16 +227,16 @@ export function MessagesPage() {
                         className={`flex ${message.isOwn ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-[70%] rounded-lg p-3 ${
+                          className={`max-w-[70%] rounded-2xl p-3 ${
                             message.isOwn
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-zinc-800 text-gray-300'
+                              ? 'bg-gray-900 text-white'
+                              : 'bg-gray-100 text-gray-900'
                           }`}
                         >
                           <p>{message.text}</p>
                           <p
                             className={`text-xs mt-1 ${
-                              message.isOwn ? 'text-emerald-100' : 'text-gray-500'
+                              message.isOwn ? 'text-gray-300' : 'text-gray-500'
                             }`}
                           >
                             {message.timestamp}
@@ -248,18 +248,18 @@ export function MessagesPage() {
                 </ScrollArea>
 
                 {/* Message Input */}
-                <div className="border-t border-zinc-800 p-4">
+                <div className="border-t border-gray-200 p-4">
                   <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-gray-400 hover:text-white"
+                      className="text-gray-600 hover:text-gray-900"
                     >
                       <Paperclip className="h-5 w-5" />
                     </Button>
                     <Input
                       placeholder="Type a message..."
-                      className="bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-500 rounded-full"
                       value={messageText}
                       onChange={(e) => setMessageText(e.target.value)}
                       onKeyPress={(e) => {
@@ -269,7 +269,7 @@ export function MessagesPage() {
                       }}
                     />
                     <Button
-                      className="bg-emerald-600 hover:bg-emerald-700"
+                      className="bg-gray-900 hover:bg-gray-800 text-white rounded-full"
                       onClick={handleSendMessage}
                     >
                       <Send className="h-5 w-5" />
@@ -279,7 +279,7 @@ export function MessagesPage() {
               </>
             ) : (
               <div className="flex items-center justify-center h-[600px]">
-                <p className="text-gray-400">Select a conversation to start messaging</p>
+                <p className="text-gray-600">Select a conversation to start messaging</p>
               </div>
             )}
           </Card>

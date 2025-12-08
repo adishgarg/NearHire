@@ -180,12 +180,12 @@ export function MarketplacePage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto py-8">
+    <div className="min-h-screen bg-[#e6ddcf] text-gray-900">
+      <div className="container mx-auto py-8 px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">Marketplace</h1>
-          <p className="text-zinc-400">
+          <h1 className="text-4xl font-serif font-semibold mb-4 text-gray-900">Marketplace</h1>
+          <p className="text-gray-600">
             Discover services from talented freelancers around the world
           </p>
         </div>
@@ -195,22 +195,22 @@ export function MarketplacePage() {
           {/* Search Bar */}
           <div className="flex gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 placeholder="Search for services..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-10 bg-zinc-900 border-zinc-700 text-white"
+                className="pl-10 bg-white border-gray-300 text-gray-900 rounded-full"
               />
             </div>
-            <Button onClick={handleSearch} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={handleSearch} className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-6">
               Search
             </Button>
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+              className="border-gray-300 text-gray-700 hover:bg-white rounded-full"
             >
               <Filter className="w-4 h-4 mr-2" />
               Filters
@@ -223,10 +223,10 @@ export function MarketplacePage() {
               <Badge
                 key={category.value}
                 variant={selectedCategory === category.value ? "default" : "outline"}
-                className={`cursor-pointer transition-colors ${
+                className={`cursor-pointer transition-colors rounded-full ${
                   selectedCategory === category.value 
-                    ? 'bg-emerald-600 text-white border-emerald-600' 
-                    : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'
+                    ? 'bg-gray-900 text-white border-gray-900' 
+                    : 'border-gray-300 text-gray-700 hover:bg-white'
                 }`}
                 onClick={() => handleCategoryChange(category.value)}
               >
@@ -237,22 +237,22 @@ export function MarketplacePage() {
 
           {/* Advanced Filters */}
           {showFilters && (
-            <Card className="border-zinc-800 bg-zinc-900">
+            <Card className="border-gray-200 bg-white rounded-3xl">
               <CardHeader>
-                <CardTitle className="text-lg">Advanced Filters</CardTitle>
+                <CardTitle className="text-lg font-serif text-gray-900">Advanced Filters</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid md:grid-cols-3 gap-6">
                   {/* Category Filter */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">Category</label>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Category</label>
                     <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                      <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-700">
+                      <SelectContent className="bg-white border-gray-200">
                         {categories.map((category) => (
-                          <SelectItem key={category.value} value={category.value} className="text-white hover:bg-zinc-800 focus:bg-zinc-800">
+                          <SelectItem key={category.value} value={category.value} className="text-gray-900 hover:bg-gray-50 focus:bg-gray-50">
                             {category.label}
                           </SelectItem>
                         ))}
@@ -262,14 +262,14 @@ export function MarketplacePage() {
 
                   {/* Sort By */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">Sort By</label>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Sort By</label>
                     <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                      <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-700">
+                      <SelectContent className="bg-white border-gray-200">
                         {sortOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value} className="text-white hover:bg-zinc-800 focus:bg-zinc-800">
+                          <SelectItem key={option.value} value={option.value} className="text-gray-900 hover:bg-gray-50 focus:bg-gray-50">
                             {option.label}
                           </SelectItem>
                         ))}
@@ -279,7 +279,7 @@ export function MarketplacePage() {
 
                   {/* Delivery Time */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-sm font-medium mb-2 text-gray-700">
                       Max Delivery Time: {maxDeliveryTime} days
                     </label>
                     <Slider
@@ -295,7 +295,7 @@ export function MarketplacePage() {
 
                 {/* Price Range */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
                     Price Range: ${priceRange[0]} - ${priceRange[1]}
                   </label>
                   <Slider
@@ -310,10 +310,10 @@ export function MarketplacePage() {
 
                 {/* Filter Actions */}
                 <div className="flex gap-3">
-                  <Button onClick={handlePriceFilter} className="bg-emerald-600 hover:bg-emerald-700">
+                  <Button onClick={handlePriceFilter} className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-6">
                     Apply Filters
                   </Button>
-                  <Button variant="outline" onClick={clearFilters} className="border-zinc-700">
+                  <Button variant="outline" onClick={clearFilters} className="border-gray-300 text-gray-700 hover:bg-white rounded-full px-6">
                     Clear All
                   </Button>
                 </div>
@@ -324,13 +324,13 @@ export function MarketplacePage() {
 
         {/* Results Header */}
         <div className="flex items-center justify-between mb-6">
-          <p className="text-zinc-400">
+          <p className="text-gray-600">
             {loading ? 'Searching...' : `${pagination.totalItems} services found`}
           </p>
           <div className="flex items-center gap-2">
-            <SortAsc className="w-4 h-4 text-zinc-400" />
+            <SortAsc className="w-4 h-4 text-gray-600" />
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-48 bg-zinc-900 border-zinc-700">
+              <SelectTrigger className="w-48 bg-white border-gray-300">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -347,7 +347,7 @@ export function MarketplacePage() {
         {/* Gig Grid */}
         {loading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-gray-900" />
           </div>
         ) : gigs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -385,11 +385,11 @@ export function MarketplacePage() {
         ) : (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold mb-2">No services found</h3>
-            <p className="text-zinc-400 mb-4">
+            <h3 className="text-xl font-serif font-semibold mb-2 text-gray-900">No services found</h3>
+            <p className="text-gray-600 mb-4">
               Try adjusting your search criteria or browse different categories
             </p>
-            <Button onClick={clearFilters} variant="outline" className="border-zinc-700">
+            <Button onClick={clearFilters} variant="outline" className="border-gray-300 text-gray-700 hover:bg-white rounded-full px-6">
               Clear Filters
             </Button>
           </div>
@@ -403,7 +403,7 @@ export function MarketplacePage() {
                 variant="outline"
                 disabled={currentPage <= 1}
                 onClick={() => changePage(currentPage - 1)}
-                className="border-zinc-700"
+                className="border-gray-300 text-gray-700 hover:bg-white rounded-full"
               >
                 Previous
               </Button>
@@ -415,8 +415,8 @@ export function MarketplacePage() {
                   onClick={() => changePage(page)}
                   className={
                     page === currentPage
-                      ? "bg-emerald-600 hover:bg-emerald-700"
-                      : "border-zinc-700"
+                      ? "bg-gray-900 hover:bg-gray-800 text-white rounded-full"
+                      : "border-gray-300 text-gray-700 hover:bg-white rounded-full"
                   }
                 >
                   {page}
@@ -427,7 +427,7 @@ export function MarketplacePage() {
                 variant="outline"
                 disabled={currentPage >= pagination.totalPages}
                 onClick={() => changePage(currentPage + 1)}
-                className="border-zinc-700"
+                className="border-gray-300 text-gray-700 hover:bg-white rounded-full"
               >
                 Next
               </Button>

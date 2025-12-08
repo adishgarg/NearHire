@@ -67,17 +67,17 @@ export default function Profile() {
   if (status === 'loading' || loading) {
     return (
       <PageLayout>
-        <div className="min-h-screen bg-black">
+        <div className="min-h-screen bg-[#f5ecdf]">
           <div className="container mx-auto px-4 py-8">
-            <Card className="border-zinc-800 bg-zinc-900 p-8 mb-8">
+            <Card className="border-gray-200 bg-white p-8 mb-8 rounded-3xl">
               <div className="flex flex-col md:flex-row gap-8">
                 <div className="flex flex-col items-center md:items-start">
-                  <Skeleton className="h-32 w-32 rounded-full bg-zinc-700" />
-                  <Skeleton className="h-10 w-24 mt-4 bg-zinc-700" />
+                  <Skeleton className="h-32 w-32 rounded-full bg-gray-200" />
+                  <Skeleton className="h-10 w-24 mt-4 bg-gray-200" />
                 </div>
                 <div className="flex-1 space-y-4">
-                  <Skeleton className="h-8 w-64 bg-zinc-700" />
-                  <Skeleton className="h-4 w-32 bg-zinc-700" />
+                  <Skeleton className="h-8 w-64 bg-gray-200" />
+                  <Skeleton className="h-4 w-32 bg-gray-200" />
                   <Skeleton className="h-16 w-full bg-zinc-700" />
                   <div className="flex gap-2">
                     <Skeleton className="h-6 w-16 bg-zinc-700" />

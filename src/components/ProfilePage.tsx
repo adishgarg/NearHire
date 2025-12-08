@@ -52,18 +52,18 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
     : user.rating || 0;
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#e6ddcf]">
       <div className="container mx-auto px-4 py-8">
         {/* Profile Header */}
-        <Card className="border-zinc-800 bg-zinc-900 p-8 mb-8">
+        <Card className="border-gray-200 bg-white p-8 mb-8 rounded-3xl">
           <div className="flex flex-col md:flex-row gap-8">
             <div className="flex flex-col items-center md:items-start">
-              <Avatar className="h-32 w-32 mb-4 border-4 border-emerald-600">
+              <Avatar className="h-32 w-32 mb-4 border-4 border-gray-300">
                 <AvatarImage src={user.image || ''} alt={user.name || 'User'} />
-                <AvatarFallback className="text-3xl">{(user.name || 'U')[0].toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="text-3xl bg-gray-100 text-gray-900">{(user.name || 'U')[0].toUpperCase()}</AvatarFallback>
               </Avatar>
               {isOwnProfile && (
-                <Button variant="outline" className="border-zinc-700 text-white hover:bg-zinc-800">
+                <Button variant="outline" className="border-gray-300 text-gray-900 hover:bg-gray-50 rounded-full">
                   Edit Profile
                 </Button>
               )}
@@ -73,25 +73,25 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <h1 className="text-white">{user.name}</h1>
+                    <h1 className="text-gray-900 font-serif text-3xl font-semibold">{user.name}</h1>
                     {user.verified && (
-                      <VerifiedIcon className="h-6 w-6 fill-emerald-600 text-emerald-600" />
+                      <VerifiedIcon className="h-6 w-6 fill-gray-900 text-gray-900" />
                     )}
                   </div>
-                  <p className="text-gray-400 mb-3">@{user.username || user.email?.split('@')[0] || 'user'}</p>
-                  <Badge className="bg-emerald-600/10 text-emerald-400 border-emerald-600">
+                  <p className="text-gray-600 mb-3">@{user.username || user.email?.split('@')[0] || 'user'}</p>
+                  <Badge className="bg-gray-100 text-gray-700 border-gray-300 rounded-full">
                     {user.level || 'New Seller'}
                   </Badge>
                 </div>
                 {!isOwnProfile && (
-                  <Button className="bg-emerald-600 hover:bg-emerald-700">
+                  <Button className="bg-gray-900 hover:bg-gray-800 text-white rounded-full">
                     <MessageSquare className="mr-2 h-4 w-4" />
                     Contact
                   </Button>
                 )}
               </div>
 
-              <p className="text-gray-300 mb-6">
+              <p className="text-gray-600 mb-6">
                 {user.bio || `Professional ${userGigs[0]?.category || 'freelancer'} with a passion for delivering high-quality work.`}
               </p>
 
@@ -100,30 +100,30 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
                 <div className="text-center md:text-left">
                   <div className="flex items-center gap-2 mb-1">
                     <Star className="h-4 w-4 text-amber-500" />
-                    <span className="text-gray-400 text-sm">Rating</span>
+                    <span className="text-gray-500 text-sm">Rating</span>
                   </div>
-                  <p className="text-white text-xl">{avgRating.toFixed(1)}</p>
+                  <p className="text-gray-900 text-xl font-semibold">{avgRating.toFixed(1)}</p>
                 </div>
                 <div className="text-center md:text-left">
                   <div className="flex items-center gap-2 mb-1">
-                    <Award className="h-4 w-4 text-emerald-600" />
-                    <span className="text-gray-400 text-sm">Reviews</span>
+                    <Award className="h-4 w-4 text-gray-900" />
+                    <span className="text-gray-500 text-sm">Reviews</span>
                   </div>
-                  <p className="text-white text-xl">{user.reviewCount || reviews.length}</p>
+                  <p className="text-gray-900 text-xl font-semibold">{user.reviewCount || reviews.length}</p>
                 </div>
                 <div className="text-center md:text-left">
                   <div className="flex items-center gap-2 mb-1">
-                    <MapPin className="h-4 w-4 text-blue-500" />
-                    <span className="text-gray-400 text-sm">From</span>
+                    <MapPin className="h-4 w-4 text-gray-600" />
+                    <span className="text-gray-500 text-sm">From</span>
                   </div>
-                  <p className="text-white">{user.location || 'Not specified'}</p>
+                  <p className="text-gray-900 font-medium">{user.location || 'Not specified'}</p>
                 </div>
                 <div className="text-center md:text-left">
                   <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="h-4 w-4 text-purple-500" />
-                    <span className="text-gray-400 text-sm">Member since</span>
+                    <Calendar className="h-4 w-4 text-gray-600" />
+                    <span className="text-gray-500 text-sm">Member since</span>
                   </div>
-                  <p className="text-white">{memberSince}</p>
+                  <p className="text-gray-900 font-medium">{memberSince}</p>
                 </div>
               </div>
             </div>
@@ -132,22 +132,22 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
 
         {/* Tabs */}
         <Tabs defaultValue="gigs" className="mb-8">
-          <TabsList className="bg-zinc-900 border-b border-zinc-800">
-            <TabsTrigger value="gigs" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-emerald-400">
+          <TabsList className="bg-white border border-gray-200 rounded-full p-1">
+            <TabsTrigger value="gigs" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
               Active Gigs ({userGigs.length})
             </TabsTrigger>
-            <TabsTrigger value="reviews" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-emerald-400">
+            <TabsTrigger value="reviews" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
               Reviews ({reviews.length})
             </TabsTrigger>
-            <TabsTrigger value="about" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-emerald-400">
+            <TabsTrigger value="about" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
               About
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="gigs" className="mt-6">
             {userGigs.length === 0 ? (
-              <Card className="border-zinc-800 bg-zinc-900 p-12 text-center">
-                <p className="text-gray-400">No active gigs yet</p>
+              <Card className="border-gray-200 bg-white p-12 text-center rounded-3xl">
+                <p className="text-gray-600">No active gigs yet</p>
                 {isOwnProfile && (
                   <Button className="mt-4 bg-emerald-600 hover:bg-emerald-700">
                     Create Your First Gig
@@ -179,23 +179,23 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
           <TabsContent value="reviews" className="mt-6">
             <div className="space-y-4">
               {reviews.length === 0 ? (
-                <Card className="border-zinc-800 bg-zinc-900 p-12 text-center">
-                  <p className="text-gray-400">No reviews yet</p>
+                <Card className="border-gray-200 bg-white p-12 text-center rounded-3xl">
+                  <p className="text-gray-600">No reviews yet</p>
                   {!isOwnProfile && (
                     <p className="text-gray-500 mt-2">Be the first to leave a review!</p>
                   )}
                 </Card>
               ) : (
                 reviews.map((review, index) => (
-                  <Card key={index} className="border-zinc-800 bg-zinc-900 p-6">
+                  <Card key={index} className="border-gray-200 bg-white p-6 rounded-2xl">
                     <div className="flex items-start gap-4">
-                      <Avatar className="h-12 w-12">
+                      <Avatar className="h-12 w-12 border-2 border-gray-300">
                         <AvatarImage src={review.reviewer.image || ''} alt={review.reviewer.name} />
                         <AvatarFallback>{review.reviewer.name[0]?.toUpperCase() || 'U'}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
-                          <p className="text-white">{review.reviewer.name}</p>
+                          <p className="text-gray-900 font-semibold">{review.reviewer.name}</p>
                           <span className="text-sm text-gray-500">
                             {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
                           </span>
@@ -207,13 +207,13 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
                               className={`h-4 w-4 ${
                                 j < review.rating 
                                   ? 'fill-amber-500 text-amber-500' 
-                                  : 'text-gray-600'
+                                  : 'text-gray-300'
                               }`} 
                             />
                           ))}
-                          <span className="ml-2 text-sm text-gray-400">({review.rating}/5)</span>
+                          <span className="ml-2 text-sm text-gray-600">({review.rating}/5)</span>
                         </div>
-                        <p className="text-gray-300">
+                        <p className="text-gray-700 leading-relaxed">
                           {review.comment}
                         </p>
                       </div>
@@ -225,21 +225,21 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
           </TabsContent>
 
           <TabsContent value="about" className="mt-6">
-            <Card className="border-zinc-800 bg-zinc-900 p-6">
-              <h3 className="mb-4 text-white">About Me</h3>
-              <p className="text-gray-300 mb-6 leading-relaxed">
+            <Card className="border-gray-200 bg-white p-6 rounded-3xl">
+              <h3 className="mb-4 text-gray-900 font-playfair font-semibold text-xl">About Me</h3>
+              <p className="text-gray-700 mb-6 leading-relaxed">
                 {user.bio || `I'm a professional freelancer with ${user.reviewCount || reviews.length}+ completed projects and a ${avgRating.toFixed(1)} star rating.
 I specialize in delivering high-quality work that exceeds client expectations.`}
               </p>
               
               {user.website && (
                 <div className="mb-6">
-                  <h3 className="mb-2 text-white">Website</h3>
+                  <h3 className="mb-2 text-gray-900 font-semibold">Website</h3>
                   <a 
                     href={user.website} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 transition-colors"
+                    className="text-gray-700 hover:text-gray-900 underline transition-colors"
                   >
                     {user.website}
                   </a>
@@ -248,31 +248,31 @@ I specialize in delivering high-quality work that exceeds client expectations.`}
               
               {user.phone && isOwnProfile && (
                 <div className="mb-6">
-                  <h3 className="mb-2 text-white">Phone</h3>
-                  <p className="text-gray-300">{user.phone}</p>
+                  <h3 className="mb-2 text-gray-900 font-semibold">Phone</h3>
+                  <p className="text-gray-700">{user.phone}</p>
                 </div>
               )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {user.totalEarnings && (
                   <div>
-                    <h3 className="mb-2 text-white">Total Earnings</h3>
-                    <p className="text-emerald-400 text-xl font-semibold">${user.totalEarnings}</p>
+                    <h3 className="mb-2 text-gray-900 font-semibold">Total Earnings</h3>
+                    <p className="text-gray-900 text-xl font-semibold">${user.totalEarnings}</p>
                   </div>
                 )}
                 
                 {user.responseTime && (
                   <div>
-                    <h3 className="mb-2 text-white">Avg Response Time</h3>
-                    <p className="text-gray-300">{user.responseTime}</p>
+                    <h3 className="mb-2 text-gray-900 font-semibold">Avg Response Time</h3>
+                    <p className="text-gray-700">{user.responseTime}</p>
                   </div>
                 )}
               </div>
               
               {user.lastSeen && (
                 <div className="mt-6">
-                  <h3 className="mb-2 text-white">Last Active</h3>
-                  <p className="text-gray-300">
+                  <h3 className="mb-2 text-gray-900 font-semibold">Last Active</h3>
+                  <p className="text-gray-700">
                     {formatDistanceToNow(new Date(user.lastSeen), { addSuffix: true })}
                   </p>
                 </div>

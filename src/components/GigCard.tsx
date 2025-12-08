@@ -27,11 +27,11 @@ export function GigCard({ gig, onClick }: GigCardProps) {
 
   return (
     <Card
-      className="group cursor-pointer overflow-hidden border-zinc-800 bg-zinc-900 transition-all hover:border-emerald-600 hover:shadow-lg hover:shadow-emerald-600/10"
+      className="group cursor-pointer overflow-hidden border-gray-200 bg-white transition-all hover:shadow-xl hover:shadow-gray-900/10 rounded-3xl"
       onClick={handleClick}
     >
       {/* Gig Image */}
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden rounded-t-3xl">
         <ImageWithFallback
           src={gig.image || ((gig as any).images && (gig as any).images[0]) || ''}
           alt={gig.title}
@@ -40,51 +40,51 @@ export function GigCard({ gig, onClick }: GigCardProps) {
         <Button
           size="icon"
           variant="ghost"
-          className="absolute top-2 right-2 h-8 w-8 bg-black/50 backdrop-blur-sm hover:bg-black/70"
+          className="absolute top-3 right-3 h-8 w-8 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full"
           onClick={(e) => {
             e.stopPropagation();
           }}
         >
-          <Heart className="h-4 w-4 text-white" />
+          <Heart className="h-4 w-4 text-gray-900" />
         </Button>
       </div>
 
       {/* Gig Info */}
-      <div className="p-4">
+      <div className="p-5">
         {/* Seller Info */}
         <div className="mb-3 flex items-center gap-2">
-          <Avatar className="h-6 w-6">
+          <Avatar className="h-7 w-7 border border-gray-200">
             <AvatarImage src={gig.seller?.avatar || gig.seller?.image || ''} alt={gig.seller?.name || 'Seller'} />
-            <AvatarFallback>{(gig.seller?.name || 'S')[0].toUpperCase()}</AvatarFallback>
+            <AvatarFallback className="bg-gray-100 text-gray-900 text-xs">{(gig.seller?.name || 'S')[0].toUpperCase()}</AvatarFallback>
           </Avatar>
-          <span className="text-sm text-gray-400">{gig.seller?.username || gig.seller?.name || 'Unknown Seller'}</span>
+          <span className="text-sm text-gray-600">{gig.seller?.username || gig.seller?.name || 'Unknown Seller'}</span>
           {gig.seller?.verified && (
-            <VerifiedIcon className="h-4 w-4 fill-emerald-600 text-emerald-600" />
+            <VerifiedIcon className="h-4 w-4 fill-gray-900 text-gray-900" />
           )}
-          <Badge variant="outline" className="ml-auto border-emerald-600 text-emerald-400 text-xs">
+          <Badge variant="outline" className="ml-auto border-gray-300 text-gray-700 text-xs rounded-full">
             {gig.seller?.level || 'New Seller'}
           </Badge>
         </div>
 
         {/* Title */}
-        <h3 className="mb-3 line-clamp-2 text-white group-hover:text-emerald-400 transition-colors">
+        <h3 className="mb-3 line-clamp-2 text-gray-900 font-medium group-hover:text-gray-700 transition-colors">
           {gig.title}
         </h3>
 
         {/* Rating */}
-        <div className="mb-3 flex items-center gap-2">
+        <div className="mb-4 flex items-center gap-2">
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-            <span className="text-amber-500">{gig.rating.toFixed(1)}</span>
+            <span className="text-gray-900 font-medium">{gig.rating.toFixed(1)}</span>
           </div>
           <span className="text-sm text-gray-500">({gig.reviewCount})</span>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-zinc-800 pt-3">
-          <div className="text-gray-400 text-sm">
-            <span className="text-xs uppercase">Starting at</span>
-            <p className="text-white text-lg">${gig.price}</p>
+        <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+          <div className="text-gray-600 text-sm">
+            <span className="text-xs uppercase tracking-wider">Starting at</span>
+            <p className="text-gray-900 text-xl font-serif">${gig.price}</p>
           </div>
         </div>
       </div>

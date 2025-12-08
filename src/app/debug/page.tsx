@@ -74,14 +74,14 @@ export default function DebugPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#f5ecdf] text-gray-900 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-[#f5ecdf] text-gray-900 p-8">
       <div className="container mx-auto max-w-6xl">
         <h1 className="text-3xl font-bold mb-8 text-emerald-400">Database Debug Information</h1>
         

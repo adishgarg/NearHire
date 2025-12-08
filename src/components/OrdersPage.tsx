@@ -94,22 +94,22 @@ export function OrdersPage({ isSelling = false }: { isSelling?: boolean }) {
       'in-progress': {
         icon: Clock,
         text: 'In Progress',
-        className: 'bg-blue-600/10 text-blue-400 border-blue-600',
+        className: 'bg-blue-50 text-blue-700 border-blue-300',
       },
       'delivered': {
         icon: AlertCircle,
         text: 'Delivered',
-        className: 'bg-amber-600/10 text-amber-400 border-amber-600',
+        className: 'bg-amber-50 text-amber-700 border-amber-300',
       },
       'completed': {
         icon: CheckCircle2,
         text: 'Completed',
-        className: 'bg-emerald-600/10 text-emerald-400 border-emerald-600',
+        className: 'bg-emerald-50 text-emerald-700 border-emerald-300',
       },
       'cancelled': {
         icon: XCircle,
         text: 'Cancelled',
-        className: 'bg-red-600/10 text-red-400 border-red-600',
+        className: 'bg-red-50 text-red-700 border-red-300',
       },
     };
 
@@ -132,10 +132,10 @@ export function OrdersPage({ isSelling = false }: { isSelling?: boolean }) {
     const otherUser = isSelling ? order.buyer : order.seller;
 
     return (
-      <Card className="border-zinc-800 bg-zinc-900 p-6">
+      <Card className="border-gray-200 bg-white p-6 rounded-3xl">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Gig Image */}
-          <div className="w-full md:w-48 h-32 rounded-lg overflow-hidden bg-zinc-800">
+          <div className="w-full md:w-48 h-32 rounded-2xl overflow-hidden bg-gray-100">
             <img
               src={order.gigImage}
               alt={order.gigTitle}
@@ -147,13 +147,13 @@ export function OrdersPage({ isSelling = false }: { isSelling?: boolean }) {
           <div className="flex-1">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h3 className="text-white mb-2">{order.gigTitle}</h3>
+                <h3 className="text-gray-900 font-semibold mb-2">{order.gigTitle}</h3>
                 <div className="flex items-center gap-2 mb-2">
-                  <Avatar className="h-6 w-6">
+                  <Avatar className="h-6 w-6 border border-gray-300">
                     <AvatarImage src={otherUser.avatar} alt={otherUser.name} />
                     <AvatarFallback>{otherUser.name[0]}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm text-gray-400">
+                  <span className="text-sm text-gray-600">
                     {isSelling ? 'Buyer' : 'Seller'}: {otherUser.name}
                   </span>
                 </div>
@@ -165,8 +165,8 @@ export function OrdersPage({ isSelling = false }: { isSelling?: boolean }) {
             {order.status === 'in-progress' && order.progress !== undefined && (
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-400">Progress</span>
-                  <span className="text-sm text-emerald-400">{order.progress}%</span>
+                  <span className="text-sm text-gray-600">Progress</span>
+                  <span className="text-sm text-gray-900 font-semibold">{order.progress}%</span>
                 </div>
                 <Progress value={order.progress} className="h-2" />
               </div>
@@ -176,50 +176,50 @@ export function OrdersPage({ isSelling = false }: { isSelling?: boolean }) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div>
                 <p className="text-xs text-gray-500 mb-1">Order Date</p>
-                <p className="text-white text-sm">{order.orderDate}</p>
+                <p className="text-gray-900 text-sm font-medium">{order.orderDate}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Due Date</p>
-                <p className="text-white text-sm">{order.dueDate}</p>
+                <p className="text-gray-900 text-sm font-medium">{order.dueDate}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Order ID</p>
-                <p className="text-white text-sm">#{order.id}</p>
+                <p className="text-gray-900 text-sm font-medium">#{order.id}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Total</p>
-                <p className="text-white text-sm">${order.price}</p>
+                <p className="text-gray-900 text-sm font-semibold">${order.price}</p>
               </div>
             </div>
 
             {/* Actions */}
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" className="border-zinc-700 text-white hover:bg-zinc-800">
+              <Button variant="outline" size="sm" className="border-gray-300 text-gray-900 hover:bg-gray-50 rounded-full">
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Contact {isSelling ? 'Buyer' : 'Seller'}
               </Button>
               
               {order.status === 'delivered' && !isSelling && (
                 <>
-                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                  <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white rounded-full">
                     <CheckCircle2 className="mr-2 h-4 w-4" />
                     Accept Delivery
                   </Button>
-                  <Button variant="outline" size="sm" className="border-amber-600 text-amber-400 hover:bg-amber-600/10">
+                  <Button variant="outline" size="sm" className="border-amber-300 text-amber-700 hover:bg-amber-50 rounded-full">
                     Request Revision
                   </Button>
                 </>
               )}
 
               {order.status === 'in-progress' && isSelling && (
-                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white rounded-full">
                   <Download className="mr-2 h-4 w-4" />
                   Deliver Work
                 </Button>
               )}
 
               {order.status === 'completed' && (
-                <Button variant="outline" size="sm" className="border-zinc-700 text-white hover:bg-zinc-800">
+                <Button variant="outline" size="sm" className="border-gray-300 text-gray-900 hover:bg-gray-50 rounded-full">
                   <Download className="mr-2 h-4 w-4" />
                   Download Files
                 </Button>
@@ -232,24 +232,24 @@ export function OrdersPage({ isSelling = false }: { isSelling?: boolean }) {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#f5ecdf]">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="mb-6 text-white">
+        <h1 className="mb-6 text-gray-900 font-playfair text-3xl font-semibold">
           {isSelling ? 'Selling Orders' : 'My Orders'}
         </h1>
 
         <Tabs defaultValue="all" className="mb-8">
-          <TabsList className="bg-zinc-900 border-b border-zinc-800">
-            <TabsTrigger value="all" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-emerald-400">
+          <TabsList className="bg-white border border-gray-200 rounded-full p-1">
+            <TabsTrigger value="all" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
               All Orders ({orders.length})
             </TabsTrigger>
-            <TabsTrigger value="in-progress" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-emerald-400">
+            <TabsTrigger value="in-progress" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
               In Progress ({filterOrdersByStatus('in-progress').length})
             </TabsTrigger>
-            <TabsTrigger value="delivered" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-emerald-400">
+            <TabsTrigger value="delivered" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
               Delivered ({filterOrdersByStatus('delivered').length})
             </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-emerald-400">
+            <TabsTrigger value="completed" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
               Completed ({filterOrdersByStatus('completed').length})
             </TabsTrigger>
           </TabsList>

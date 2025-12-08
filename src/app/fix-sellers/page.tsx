@@ -70,7 +70,7 @@ export default function FixSellersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-[#f5ecdf] text-gray-900 p-8">
       <div className="container mx-auto">
         <h1 className="text-3xl font-bold mb-8">Fix Gig Seller Relationships</h1>
         

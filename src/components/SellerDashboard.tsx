@@ -104,15 +104,15 @@ export function SellerDashboard({ gigs = mockGigs, onGigClick, onCreateGig }: Se
   ];
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#f5ecdf]">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="mb-2 text-white">Seller Dashboard</h1>
-            <p className="text-gray-400">Manage your gigs and track your performance</p>
+            <h1 className="mb-2 text-gray-900 font-playfair text-3xl font-semibold">Seller Dashboard</h1>
+            <p className="text-gray-600">Manage your gigs and track your performance</p>
           </div>
-          <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleCreateGig}>
+          <Button className="bg-gray-900 hover:bg-gray-800 text-white rounded-full" onClick={handleCreateGig}>
             <Plus className="mr-2 h-4 w-4" />
             Create New Gig
           </Button>
@@ -123,17 +123,17 @@ export function SellerDashboard({ gigs = mockGigs, onGigClick, onCreateGig }: Se
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <Card key={stat.title} className="border-zinc-800 bg-zinc-900 p-6">
+              <Card key={stat.title} className="border-gray-200 bg-white p-6 rounded-3xl">
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${stat.bgColor}`}>
-                    <Icon className={`h-6 w-6 ${stat.color}`} />
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100`}>
+                    <Icon className="h-6 w-6 text-gray-900" />
                   </div>
-                  <Badge variant="outline" className="border-emerald-600 text-emerald-400">
+                  <Badge variant="outline" className="border-gray-300 text-gray-700">
                     {stat.change}
                   </Badge>
                 </div>
-                <p className="text-gray-400 text-sm mb-1">{stat.title}</p>
-                <p className="text-2xl text-white">{stat.value}</p>
+                <p className="text-gray-600 text-sm mb-1">{stat.title}</p>
+                <p className="text-2xl text-gray-900 font-semibold">{stat.value}</p>
               </Card>
             );
           })}
@@ -143,23 +143,23 @@ export function SellerDashboard({ gigs = mockGigs, onGigClick, onCreateGig }: Se
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Gigs Management */}
-            <Card className="border-zinc-800 bg-zinc-900 p-6 mb-6">
+            <Card className="border-gray-200 bg-white p-6 mb-6 rounded-3xl">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-white">Your Gigs</h2>
-                <Button variant="outline" className="border-zinc-700 text-white hover:bg-zinc-800">
+                <h2 className="text-gray-900 font-playfair text-xl font-semibold">Your Gigs</h2>
+                <Button variant="outline" className="border-gray-300 text-gray-900 hover:bg-gray-50 rounded-full">
                   Manage All
                 </Button>
               </div>
 
               <Tabs defaultValue="active">
-                <TabsList className="bg-zinc-800 border-b border-zinc-700 mb-4">
-                  <TabsTrigger value="active" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-emerald-400">
+                <TabsList className="bg-white border border-gray-200 rounded-full p-1 mb-4">
+                  <TabsTrigger value="active" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
                     Active ({gigs.length})
                   </TabsTrigger>
-                  <TabsTrigger value="draft" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-emerald-400">
+                  <TabsTrigger value="draft" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
                     Drafts (2)
                   </TabsTrigger>
-                  <TabsTrigger value="paused" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-emerald-400">
+                  <TabsTrigger value="paused" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
                     Paused (0)
                   </TabsTrigger>
                 </TabsList>
@@ -187,8 +187,8 @@ export function SellerDashboard({ gigs = mockGigs, onGigClick, onCreateGig }: Se
 
                 <TabsContent value="draft">
                   <div className="text-center py-8">
-                    <p className="text-gray-400">You have 2 draft gigs</p>
-                    <Button className="mt-4 bg-emerald-600 hover:bg-emerald-700">
+                    <p className="text-gray-600">You have 2 draft gigs</p>
+                    <Button className="mt-4 bg-gray-900 hover:bg-gray-800 text-white rounded-full">
                       View Drafts
                     </Button>
                   </div>
@@ -196,19 +196,19 @@ export function SellerDashboard({ gigs = mockGigs, onGigClick, onCreateGig }: Se
 
                 <TabsContent value="paused">
                   <div className="text-center py-8">
-                    <p className="text-gray-400">No paused gigs</p>
+                    <p className="text-gray-600">No paused gigs</p>
                   </div>
                 </TabsContent>
               </Tabs>
             </Card>
 
             {/* Performance Chart Placeholder */}
-            <Card className="border-zinc-800 bg-zinc-900 p-6">
-              <h2 className="mb-6 text-white">Earnings Overview</h2>
-              <div className="h-64 flex items-center justify-center bg-zinc-800 rounded-lg">
+            <Card className="border-gray-200 bg-white p-6 rounded-3xl">
+              <h2 className="mb-6 text-gray-900 font-playfair text-xl font-semibold">Earnings Overview</h2>
+              <div className="h-64 flex items-center justify-center bg-gray-50 rounded-2xl">
                 <div className="text-center">
-                  <TrendingUp className="h-12 w-12 text-emerald-600 mx-auto mb-3" />
-                  <p className="text-gray-400">Earnings chart would go here</p>
+                  <TrendingUp className="h-12 w-12 text-gray-900 mx-auto mb-3" />
+                  <p className="text-gray-600">Earnings chart would go here</p>
                 </div>
               </div>
             </Card>
@@ -217,18 +217,18 @@ export function SellerDashboard({ gigs = mockGigs, onGigClick, onCreateGig }: Se
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* Quick Actions */}
-            <Card className="border-zinc-800 bg-zinc-900 p-6">
-              <h3 className="mb-4 text-white">Quick Actions</h3>
+            <Card className="border-gray-200 bg-white p-6 rounded-3xl">
+              <h3 className="mb-4 text-gray-900 font-playfair font-semibold text-lg">Quick Actions</h3>
               <div className="space-y-2">
-                <Button className="w-full justify-start bg-zinc-800 text-white hover:bg-zinc-700">
+                <Button className="w-full justify-start bg-gray-50 text-gray-900 hover:bg-gray-100 rounded-full">
                   <MessageSquare className="mr-2 h-4 w-4" />
                   View Messages
                 </Button>
-                <Button className="w-full justify-start bg-zinc-800 text-white hover:bg-zinc-700">
+                <Button className="w-full justify-start bg-gray-50 text-gray-900 hover:bg-gray-100 rounded-full">
                   <ShoppingBag className="mr-2 h-4 w-4" />
                   Manage Orders
                 </Button>
-                <Button className="w-full justify-start bg-zinc-800 text-white hover:bg-zinc-700">
+                <Button className="w-full justify-start bg-gray-50 text-gray-900 hover:bg-gray-100 rounded-full">
                   <Star className="mr-2 h-4 w-4" />
                   View Reviews
                 </Button>
@@ -236,18 +236,18 @@ export function SellerDashboard({ gigs = mockGigs, onGigClick, onCreateGig }: Se
             </Card>
 
             {/* Recent Activity */}
-            <Card className="border-zinc-800 bg-zinc-900 p-6">
-              <h3 className="mb-4 text-white">Recent Activity</h3>
+            <Card className="border-gray-200 bg-white p-6 rounded-3xl">
+              <h3 className="mb-4 text-gray-900 font-playfair font-semibold text-lg">Recent Activity</h3>
               <div className="space-y-4">
                 {recentActivity.map((activity, index) => {
                   const Icon = activity.icon;
                   return (
                     <div key={index} className="flex items-start gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800">
-                        <Icon className="h-4 w-4 text-emerald-600" />
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
+                        <Icon className="h-4 w-4 text-gray-900" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm text-gray-300">{activity.message}</p>
+                        <p className="text-sm text-gray-700">{activity.message}</p>
                         <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
                       </div>
                     </div>
@@ -257,12 +257,12 @@ export function SellerDashboard({ gigs = mockGigs, onGigClick, onCreateGig }: Se
             </Card>
 
             {/* Tips */}
-            <Card className="border-zinc-800 bg-gradient-to-br from-emerald-900/20 to-teal-900/20 p-6">
-              <h3 className="mb-3 text-white">Seller Tip</h3>
-              <p className="text-sm text-gray-300 mb-4">
+            <Card className="border-gray-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-3xl">
+              <h3 className="mb-3 text-gray-900 font-playfair font-semibold text-lg">Seller Tip</h3>
+              <p className="text-sm text-gray-700 mb-4">
                 Respond to messages within 1 hour to improve your response rate and attract more clients!
               </p>
-              <Button variant="outline" size="sm" className="border-emerald-600 text-emerald-400 hover:bg-emerald-600/10">
+              <Button variant="outline" size="sm" className="border-gray-300 text-gray-900 hover:bg-white rounded-full">
                 Learn More
               </Button>
             </Card>

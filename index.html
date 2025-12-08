@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NearHire – Find Freelancers Fast</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5ecdf;
+      --page-bg: #e6ddcf;
+      --primary: #111827;
+      --accent: #111827;
+      --accent-soft: #fde68a;
+      --card-bg: #ffffff;
+      --muted: #6b7280;
+      --radius-lg: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--page-bg);
+      color: var(--primary);
+      line-height: 1.6;
+    }
+
+    .page-wrapper {
+      max-width: 1200px;
+      margin: 24px auto;
+      background: var(--bg);
+      border-radius: 32px;
+      padding: 32px 40px 64px;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* NAVBAR */
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 40px;
+    }
+
+    .nav-left,
+    .nav-right {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .nav-logo {
+      font-family: "Playfair Display", serif;
+      font-weight: 600;
+      font-size: 22px;
+      letter-spacing: 0.06em;
+    }
+
+    .nav-link {
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .nav-link:hover {
+      color: var(--primary);
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary);
+      color: #f9fafb;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid #d1d5db;
+    }
+
+    /* HERO */
+
+    .hero {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .hero-eyebrow {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .hero-title-main {
+      font-family: "Playfair Display", serif;
+      font-size: 32px;
+      line-height: 1.2;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .hero-title-bold {
+      font-size: 38px;
+      font-weight: 700;
+    }
+
+    .hero-sub {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 12px auto 20px;
+    }
+
+    .hero-ctas {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    /* HERO AVATAR STRIP */
+
+    .hero-strip {
+      display: flex;
+      gap: 16px;
+      overflow: hidden;
+      padding: 0 20px;
+    }
+
+    .hero-card {
+      flex: 1 1 0;
+      background: linear-gradient(145deg, #111827 0%, #4b5563 90%);
+      border-radius: 28px;
+      height: 180px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .hero-card:nth-child(2),
+    .hero-card:nth-child(6) {
+      background: linear-gradient(145deg, #f97316, #b45309);
+    }
+
+    .hero-card:nth-child(3),
+    .hero-card:nth-child(5) {
+      background: linear-gradient(145deg, #ec4899, #7c2d12);
+    }
+
+    .hero-card:nth-child(4) {
+      background: linear-gradient(145deg, #10b981, #047857);
+    }
+
+    .hero-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.95;
+    }
+
+    .hero-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.45), transparent 55%);
+    }
+
+    .hero-card-text {
+      position: absolute;
+      bottom: 12px;
+      left: 16px;
+      right: 16px;
+      color: #f9fafb;
+      font-size: 12px;
+    }
+
+    .hero-card-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .hero-card-role {
+      opacity: 0.8;
+    }
+
+    /* SMALL FEATURE ROW UNDER HERO */
+
+    .mini-features {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+      font-size: 13px;
+    }
+
+    .mini-feature-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .mini-feature-sub {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* SECTION TITLE */
+
+    .section {
+      margin-top: 56px;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .section-sub {
+      text-align: center;
+      font-size: 13px;
+      max-width: 520px;
+      margin: 0 auto;
+      color: var(--muted);
+    }
+
+    /* FEATURE GRID */
+
+    .feature-grid {
+      margin-top: 32px;
+      display: grid;
+      grid-template-columns: 1.4fr 1.1fr;
+      gap: 18px;
+    }
+
+    .feature-card {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--card-bg);
+      position: relative;
+      min-height: 180px;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .feature-card--small {
+      min-height: 140px;
+    }
+
+    .feature-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .feature-card-content {
+      position: absolute;
+      inset: auto 18px 18px 18px;
+      color: #f9fafb;
+      font-size: 13px;
+    }
+
+    .feature-card-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .feature-card-text {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .feature-card--plain {
+      background: #e5d0b1;
+      padding: 18px;
+      align-items: flex-start;
+      color: var(--primary);
+    }
+
+    .feature-card--plain:nth-child(3) {
+      background: #e1e5e0;
+    }
+
+    .feature-card--plain .feature-card-text {
+      opacity: 1;
+      color: var(--muted);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(17, 24, 39, 0.12);
+      font-size: 11px;
+      padding: 4px 9px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+    }
+
+    /* TESTIMONIAL / IMPACT SECTION */
+
+    .impact-grid {
+      margin-top: 32px;
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 18px;
+    }
+
+    .impact-card {
+      border-radius: var(--radius-lg);
+      background: var(--card-bg);
+      padding: 18px 18px 20px;
+      font-size: 13px;
+    }
+
+    .impact-metric {
+      font-size: 30px;
+      font-weight: 600;
+      margin-bottom: 2px;
+      font-family: "Playfair Display", serif;
+    }
+
+    .impact-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .impact-divider {
+      border-top: 1px dashed #e5e7eb;
+      margin: 14px 0;
+    }
+
+    .impact-quote {
+      font-size: 13px;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .impact-person {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #111827;
+      color: #f9fafb;
+    }
+
+    /* FOOTER CTA */
+
+    .footer-cta {
+      margin-top: 56px;
+      text-align: center;
+    }
+
+    .footer-cta p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 960px) {
+      .page-wrapper {
+        padding: 24px 18px 40px;
+        margin: 12px;
+      }
+
+      .nav-left,
+      .nav-right {
+        display: none;
+      }
+      .nav {
+        justify-content: center;
+      }
+
+      .hero-title-main {
+        font-size: 26px;
+      }
+      .hero-title-bold {
+        font-size: 30px;
+      }
+
+      .hero-strip {
+        padding: 0;
+      }
+
+      .mini-features {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-grid,
+      .impact-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <!-- NAVBAR -->
+    <header class="nav">
+      <div class="nav-left">
+        <a class="nav-link" href="#services">Services</a>
+        <a class="nav-link" href="#categories">Categories</a>
+        <a class="nav-link" href="#blog">Blog</a>
+      </div>
+      <div class="nav-logo">NearHire</div>
+      <div class="nav-right">
+        <a class="nav-link" href="#pricing">Pricing</a>
+        <a class="nav-link" href="#contact">Contact</a>
+        <button class="btn-outline">Log in</button>
+        <button class="btn">Get started</button>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-eyebrow">freelance talent marketplace</div>
+      <h1 class="hero-title-main">Build Your Dream Team,</h1>
+      <div class="hero-title-bold">Hire Top Freelancers in Minutes</div>
+      <p class="hero-sub">
+        NearHire connects you with verified designers, developers, marketers, and more —
+        so you can ship projects faster without growing your payroll.
+      </p>
+      <div class="hero-ctas">
+        <button class="btn">
+          Get matched for free
+          <span>➜</span>
+        </button>
+        <button class="btn-outline">
+          Browse freelancers
+        </button>
+      </div>
+
+      <!-- STRIP OF FREELANCER CARDS -->
+      <div class="hero-strip">
+        <!-- Use your own images instead of these placeholder URLs -->
+        <article class="hero-card">
+          <img src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=600" alt="">
+          <div class="hero-card-overlay"></div>
+          <div class="hero-card-text">
+            <div class="hero-card-name">Arjun Patel</div>
+            <div class="hero-card-role">Full-Stack Developer • React / Node</div>
+          </div>
+        </article>
+
+        <article class="hero-card">
+          <img src="https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=600" alt="">
+          <div class="hero-card-overlay"></div>
+          <div class="hero-card-text">
+            <div class="hero-card-name">Mira Singh</div>
+            <div class="hero-card-role">Product Designer • SaaS & Mobile</div>
+          </div>
+        </article>
+
+        <article class="hero-card">
+          <img src="https://images.pexels.com/photos/1181680/pexels-photo-1181680.jpeg?auto=compress&cs=tinysrgb&w=600" alt="">
+          <div class="hero-card-overlay"></div>
+          <div class="hero-card-text">
+            <div class="hero-card-name">Luis Gomez</div>
+            <div class="hero-card-role">Brand & Motion Designer</div>
+          </div>
+        </article>
+
+        <article class="hero-card">
+          <img src="https://images.pexels.com/photos/1181524/pexels-photo-1181524.jpeg?auto=compress&cs=tinysrgb&w=600" alt="">
+          <div class="hero-card-overlay"></div>
+          <div class="hero-card-text">
+            <div class="hero-card-name">Sara Ahmed</div>
+            <div class="hero-card-role">Performance Marketer • DTC</div>
+          </div>
+        </article>
+
+        <article class="hero-card">
+          <img src="https://images.pexels.com/photos/1181681/pexels-photo-1181681.jpeg?auto=compress&cs=tinysrgb&w=600" alt="">
+          <div class="hero-card-overlay"></div>
+          <div class="hero-card-text">
+            <div class="hero-card-name">Noah Lee</div>
+            <div class="hero-card-role">Backend Engineer • APIs & Data</div>
+          </div>
+        </article>
+
+        <article class="hero-card">
+          <img src="https://images.pexels.com/photos/1181518/pexels-photo-1181518.jpeg?auto=compress&cs=tinysrgb&w=600" alt="">
+          <div class="hero-card-overlay"></div>
+          <div class="hero-card-text">
+            <div class="hero-card-name">Ananya Rao</div>
+            <div class="hero-card-role">Content & Copy Strategy</div>
+          </div>
+        </article>
+      </div>
+
+      <!-- MINI FEATURES -->
+      <div class="mini-features">
+        <div>
+          <div class="mini-feature-title">Verified Talent Only</div>
+          <p class="mini-feature-sub">
+            Every freelancer is screened for skills, communication, and reliability before joining NearHire.
+          </p>
+        </div>
+        <div>
+          <div class="mini-feature-title">Smart Matching</div>
+          <p class="mini-feature-sub">
+            Share your brief and we instantly shortlist the top 3 profiles that fit your budget and timeline.
+          </p>
+        </div>
+        <div>
+          <div class="mini-feature-title">Protected Payments</div>
+          <p class="mini-feature-sub">
+            Escrow-based milestones ensure you only pay when work is delivered and approved.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section class="section" id="services">
+      <h2 class="section-title">Everything You Need to Hire with Confidence</h2>
+      <p class="section-sub">
+        From posting a brief to signing off the final deliverable, NearHire keeps your projects organized,
+        clear, and on-track — all in one place.
+      </p>
+
+      <div class="feature-grid">
+        <!-- Big image left, text overlay -->
+        <article class="feature-card">
+          <img src="https://images.pexels.com/photos/1181352/pexels-photo-1181352.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="">
+          <div class="feature-card-content">
+            <span class="tag">Built-in chat & file sharing</span>
+            <h3 class="feature-card-title">Collaborate Without Leaving NearHire</h3>
+            <p class="feature-card-text">
+              Message freelancers, share briefs, and review work securely — no messy email threads needed.
+            </p>
+          </div>
+        </article>
+
+        <!-- Right column stacked -->
+        <div style="display:flex; flex-direction:column; gap:18px;">
+          <article class="feature-card feature-card--plain feature-card--small">
+            <h3 class="feature-card-title">Instant Project Briefs</h3>
+            <p class="feature-card-text">
+              Use our guided briefs to describe your project in minutes. We’ll handle the rest — from invites to follow-ups.
+            </p>
+          </article>
+
+          <article class="feature-card feature-card--plain feature-card--small">
+            <h3 class="feature-card-title">Transparent Pricing</h3>
+            <p class="feature-card-text">
+              Compare hourly and fixed-price offers side by side, with no hidden platform fees for clients.
+            </p>
+          </article>
+        </div>
+
+        <!-- Colored card bottom-left -->
+        <article class="feature-card feature-card--plain">
+          <h3 class="feature-card-title">Milestones & Deadlines</h3>
+          <p class="feature-card-text">
+            Break work into clear milestones, assign due dates, and keep both sides accountable with reminders.
+          </p>
+        </article>
+
+        <!-- Image card bottom-right -->
+        <article class="feature-card">
+          <img src="https://images.pexels.com/photos/1181472/pexels-photo-1181472.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="">
+          <div class="feature-card-content">
+            <span class="tag">Project dashboards</span>
+            <h3 class="feature-card-title">Track Progress at a Glance</h3>
+            <p class="feature-card-text">
+              See what’s done, what’s in review, and what’s next — across every freelancer and every project.
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- IMPACT / SOCIAL PROOF -->
+    <section class="section">
+      <h2 class="section-title">Proven Results, Real Projects</h2>
+      <p class="section-sub">
+        Thousands of founders, agencies, and product teams rely on NearHire to launch campaigns, ship features,
+        and keep their roadmap moving.
+      </p>
+
+      <div class="impact-grid">
+        <article class="impact-card">
+          <div class="impact-metric">3.7x</div>
+          <div class="impact-label">faster hiring vs traditional job boards</div>
+          <div class="impact-divider"></div>
+          <p class="impact-quote">
+            “We used NearHire to assemble a full freelance product squad in under a week. It felt like having an in-house
+            hiring manager without the overhead.”
+          </p>
+          <div class="impact-person">Aditi Sharma • Founder, Launchlane Studio</div>
+
+          <div class="badge-row">
+            <span class="badge">Startups</span>
+            <span class="badge">Agencies</span>
+            <span class="badge">Remote Teams</span>
+          </div>
+        </article>
+
+        <article class="impact-card">
+          <div class="impact-metric">95%</div>
+          <div class="impact-label">projects completed with 5-star ratings</div>
+          <div class="impact-divider"></div>
+          <p class="impact-quote">
+            NearHire’s rating and review system makes it easy to see who consistently delivers and who goes the extra mile.
+          </p>
+          <div class="impact-person">Curated, global freelance community</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- FOOTER CTA -->
+    <section class="footer-cta" id="contact">
+      <p>Ready to meet your next favourite freelancer?</p>
+      <button class="btn">
+        Create your free NearHire brief
+        <span>➜</span>
+      </button>
+      <div class="footer-note">
+        No credit card required • Only pay when you hire • Cancel anytime
+      </div>
+    </section>
+  </div>
+</body>
+</html>
