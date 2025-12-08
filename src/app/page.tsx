@@ -18,20 +18,6 @@ export default function Home() {
       <Hero />
       
       {/* Trusted By Section */}
-      <div className="border-b border-gray-200 bg-white">
-        <div className="container mx-auto px-4 py-12">
-          <div className="text-center mb-8">
-            <p className="text-gray-600">Trusted by leading companies worldwide</p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-12 opacity-40">
-            {['Google', 'Meta', 'Netflix', 'Airbnb', 'Uber'].map((company) => (
-              <div key={company} className="text-2xl font-semibold text-gray-900">
-                {company}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* Categories Section */}
       <section id="categories" className="border-b border-gray-200 py-20 px-4 bg-[#f5ecdf]">
@@ -104,9 +90,9 @@ export default function Home() {
                   <Zap className="h-10 w-10 text-blue-600" />
                 </div>
               </div>
-              <h3 className="font-serif text-2xl font-semibold text-gray-900 mb-3">Fast Delivery</h3>
+              <h3 className="font-serif text-2xl font-semibold text-gray-900 mb-3">Location-Based Matching</h3>
               <p className="text-gray-600 leading-relaxed">
-                Get your projects completed quickly with our talented freelancers
+                Find talented freelancers near you with our smart geolocation technology for faster collaboration
               </p>
             </div>
             <div className="text-center">

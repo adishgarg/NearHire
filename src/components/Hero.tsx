@@ -71,7 +71,7 @@ export function Hero({ onSearch }: HeroProps) {
         Build Your Dream Team,
       </h1>
       <div className="font-serif text-[38px] font-bold mb-3">
-        Hire Top Freelancers in Minutes
+        Talent at your doorstep
       </div>
       <p className="text-sm text-gray-600 max-w-lg mx-auto mb-5 leading-relaxed">
         NearHire connects you with verified designers, developers, marketers, and more —
