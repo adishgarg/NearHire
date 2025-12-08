@@ -59,7 +59,7 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
   if (variant === 'compact') {
     return (
       <Link href={`/gigs/${gig.id}`} className="group">
-        <Card className="border-zinc-800 bg-zinc-900 hover:border-zinc-700 transition-all duration-200">
+        <Card className="border-gray-200 bg-white hover:border-gray-300 transition-all duration-200 rounded-2xl">
           <CardContent className="p-4">
             <div className="flex gap-3">
               {/* Image */}
@@ -73,7 +73,7 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
                     onError={() => setImageError(true)}
                   />
                 ) : (
-                  <div className="w-full h-full bg-zinc-800 rounded-lg flex items-center justify-center">
+                  <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
                     <span className="text-2xl">📷</span>
                   </div>
                 )}
@@ -81,10 +81,10 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-white text-sm truncate group-hover:text-emerald-400 transition-colors">
+                <h3 className="font-medium text-gray-900 text-sm truncate group-hover:text-gray-700 transition-colors">
                   {gig.title}
                 </h3>
-                <p className="text-zinc-400 text-xs mt-1 line-clamp-2">
+                <p className="text-gray-600 text-xs mt-1 line-clamp-2">
                   {gig.description}
                 </p>
                 <div className="flex items-center justify-between mt-2">
@@ -92,12 +92,12 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
                     {hasReviews && (
                       <>
                         <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        <span className="text-yellow-400">{displayRating.toFixed(1)}</span>
-                        <span className="text-zinc-500">({gig.reviewCount})</span>
+                        <span className="text-yellow-500">{displayRating.toFixed(1)}</span>
+                        <span className="text-gray-500">({gig.reviewCount})</span>
                       </>
                     )}
                   </div>
-                  <span className="text-emerald-400 font-medium text-sm">
+                  <span className="text-gray-900 font-semibold font-playfair text-sm">
                     ${displayPrice}
                   </span>
                 </div>
@@ -111,7 +111,7 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
 
   return (
     <Link href={`/gigs/${gig.id}`} className="group">
-      <Card className="border-zinc-800 bg-zinc-900 hover:border-zinc-700 transition-all duration-200 overflow-hidden">
+      <Card className="border-gray-200 bg-white hover:border-gray-300 transition-all duration-200 overflow-hidden rounded-3xl">
         {/* Image Section */}
         <div className="relative h-48 overflow-hidden">
           {gig.images[0] && !imageError ? (
@@ -123,7 +123,7 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
               <span className="text-6xl opacity-50">📷</span>
             </div>
           )}
@@ -132,7 +132,7 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="absolute top-2 right-2 h-8 w-8 p-0 hover:bg-black/50"
+            className="absolute top-2 right-2 h-8 w-8 p-0 hover:bg-white/50"
             onClick={handleFavorite}
           >
             <Heart 
@@ -143,13 +143,13 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
           {/* Category Badge */}
           <Badge 
             variant="secondary" 
-            className="absolute top-2 left-2 bg-black/50 text-white border-none"
+            className="absolute top-2 left-2 bg-white/90 text-gray-900 border-none backdrop-blur-sm"
           >
             {gig.category.name}
           </Badge>
 
           {variant === 'featured' && (
-            <Badge className="absolute bottom-2 left-2 bg-emerald-600 text-white">
+            <Badge className="absolute bottom-2 left-2 bg-gray-900 text-white">
               Featured
             </Badge>
           )}
@@ -158,17 +158,17 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
         <CardContent className="p-4 space-y-3">
           {/* Seller Info */}
           <div className="flex items-center gap-2">
-            <Avatar className="w-6 h-6">
+            <Avatar className="w-6 h-6 border border-gray-300">
               <AvatarImage src={gig.seller.image || ''} alt={gig.seller.name || 'Seller'} />
-              <AvatarFallback className="text-xs">
+              <AvatarFallback className="text-xs bg-gray-100 text-gray-900">
                 {gig.seller.name?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm text-zinc-400">{gig.seller.name}</span>
+            <span className="text-sm text-gray-600">{gig.seller.name}</span>
             {gig.seller.rating > 0 && (
               <div className="flex items-center gap-1 ml-auto">
                 <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                <span className="text-xs text-zinc-400">
+                <span className="text-xs text-gray-600">
                   {gig.seller.rating.toFixed(1)}
                 </span>
               </div>
@@ -176,7 +176,7 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
           </div>
 
           {/* Title */}
-          <h3 className="font-medium text-white line-clamp-2 group-hover:text-emerald-400 transition-colors leading-tight">
+          <h3 className="font-medium text-gray-900 line-clamp-2 group-hover:text-gray-700 transition-colors leading-tight">
             {gig.title}
           </h3>
 
@@ -186,24 +186,24 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
               <Badge 
                 key={tag} 
                 variant="outline" 
-                className="text-xs border-zinc-700 text-zinc-400"
+                className="text-xs border-gray-300 text-gray-600"
               >
                 {tag}
               </Badge>
             ))}
             {gig.tags.length > 3 && (
-              <Badge variant="outline" className="text-xs border-zinc-700 text-zinc-400">
+              <Badge variant="outline" className="text-xs border-gray-300 text-gray-600">
                 +{gig.tags.length - 3}
               </Badge>
             )}
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-3 text-xs text-zinc-500">
+          <div className="flex items-center gap-3 text-xs text-gray-500">
             {hasReviews && (
               <div className="flex items-center gap-1">
                 <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                <span className="text-yellow-400">{displayRating.toFixed(1)}</span>
+                <span className="text-yellow-500">{displayRating.toFixed(1)}</span>
                 <span>({gig.reviewCount})</span>
               </div>
             )}
@@ -220,9 +220,9 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
           </div>
 
           {/* Price */}
-          <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
-            <span className="text-sm text-zinc-400">Starting at</span>
-            <span className="text-lg font-semibold text-emerald-400">
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+            <span className="text-sm text-gray-500">Starting at</span>
+            <span className="text-lg font-semibold text-gray-900 font-playfair">
               ${displayPrice}
             </span>
           </div>
