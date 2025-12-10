@@ -133,13 +133,13 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
         {/* Tabs */}
         <Tabs defaultValue="gigs" className="mb-8">
           <TabsList className="bg-white border border-gray-200 rounded-full p-1">
-            <TabsTrigger value="gigs" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
+            <TabsTrigger value="gigs" className="text-gray-600 data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
               Active Gigs ({userGigs.length})
             </TabsTrigger>
-            <TabsTrigger value="reviews" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
+            <TabsTrigger value="reviews" className="text-gray-600 data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
               Reviews ({reviews.length})
             </TabsTrigger>
-            <TabsTrigger value="about" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
+            <TabsTrigger value="about" className="text-gray-600 data-[state=active]:bg-gray-900 data-[state=active]:text-white rounded-full">
               About
             </TabsTrigger>
           </TabsList>

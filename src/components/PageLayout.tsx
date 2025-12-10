@@ -9,7 +9,7 @@ interface PageLayoutProps {
 
 export function PageLayout({ children, showFooter = true }: PageLayoutProps) {
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen">
       <main className="pt-4">
         {children}
       </main>
