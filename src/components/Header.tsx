@@ -79,7 +79,7 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative text-gray-600 hover:text-gray-900">
                       <Bell className="h-5 w-5" />
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-gray-900 border-0 text-xs">
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-gray-900 border-0 text-xs text-white">
                         3
                       </Badge>
                     </Button>
@@ -111,7 +111,7 @@ export function Header() {
                   onClick={() => router.push('/messages')}
                 >
                   <MessageSquare className="h-5 w-5" />
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-gray-900 border-0 text-xs">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-gray-900 border-0 text-xs text-white">
                     5
                   </Badge>
                 </Button>

@@ -195,22 +195,22 @@ export function MarketplacePage() {
           {/* Search Bar */}
           <div className="flex gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
               <Input
                 placeholder="Search for services..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-10 bg-white border-gray-300 text-gray-900 rounded-full"
+                className="pl-10 bg-white border-gray-200 text-gray-900 rounded-full focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
             </div>
-            <Button onClick={handleSearch} className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-6">
+            <Button onClick={handleSearch} className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-8">
               Search
             </Button>
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="border-gray-300 text-gray-700 hover:bg-white rounded-full"
+              className="border-gray-200 text-gray-700 hover:bg-white hover:border-gray-900 rounded-full px-6"
             >
               <Filter className="w-4 h-4 mr-2" />
               Filters
@@ -237,22 +237,22 @@ export function MarketplacePage() {
 
           {/* Advanced Filters */}
           {showFilters && (
-            <Card className="border-gray-200 bg-white rounded-3xl">
-              <CardHeader>
-                <CardTitle className="text-lg font-serif text-gray-900">Advanced Filters</CardTitle>
+            <Card className="border-gray-200 bg-white rounded-3xl shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-serif text-gray-900">Advanced Filters</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pt-0">
                 <div className="grid md:grid-cols-3 gap-6">
                   {/* Category Filter */}
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-gray-700">Category</label>
+                    <label className="block text-sm font-medium mb-3 text-gray-700">Category</label>
                     <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                      <SelectTrigger className="bg-white border-gray-200 text-gray-900 rounded-full focus:ring-2 focus:ring-gray-900 focus:border-transparent">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-gray-200">
+                      <SelectContent className="bg-white border-gray-200 rounded-2xl">
                         {categories.map((category) => (
-                          <SelectItem key={category.value} value={category.value} className="text-gray-900 hover:bg-gray-50 focus:bg-gray-50">
+                          <SelectItem key={category.value} value={category.value} className="text-gray-900 hover:bg-[#f5ecdf] focus:bg-[#f5ecdf] rounded-xl">
                             {category.label}
                           </SelectItem>
                         ))}
@@ -262,14 +262,14 @@ export function MarketplacePage() {
 
                   {/* Sort By */}
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-gray-700">Sort By</label>
+                    <label className="block text-sm font-medium mb-3 text-gray-700">Sort By</label>
                     <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                      <SelectTrigger className="bg-white border-gray-200 text-gray-900 rounded-full focus:ring-2 focus:ring-gray-900 focus:border-transparent">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-gray-200">
+                      <SelectContent className="bg-white border-gray-200 rounded-2xl">
                         {sortOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value} className="text-gray-900 hover:bg-gray-50 focus:bg-gray-50">
+                          <SelectItem key={option.value} value={option.value} className="text-gray-900 hover:bg-[#f5ecdf] focus:bg-[#f5ecdf] rounded-xl">
                             {option.label}
                           </SelectItem>
                         ))}
@@ -279,8 +279,8 @@ export function MarketplacePage() {
 
                   {/* Delivery Time */}
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-gray-700">
-                      Max Delivery Time: {maxDeliveryTime} days
+                    <label className="block text-sm font-medium mb-3 text-gray-700">
+                      Max Delivery Time: <span className="font-semibold text-gray-900">{maxDeliveryTime} days</span>
                     </label>
                     <Slider
                       value={[maxDeliveryTime]}
@@ -288,15 +288,15 @@ export function MarketplacePage() {
                       max={30}
                       min={1}
                       step={1}
-                      className="mt-2"
+                      className="mt-4"
                     />
                   </div>
                 </div>
 
                 {/* Price Range */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    Price Range: ${priceRange[0]} - ${priceRange[1]}
+                  <label className="block text-sm font-medium mb-3 text-gray-700">
+                    Price Range: <span className="font-semibold text-gray-900">${priceRange[0]} - ${priceRange[1]}</span>
                   </label>
                   <Slider
                     value={priceRange}
@@ -304,16 +304,16 @@ export function MarketplacePage() {
                     max={100000}
                     min={5}
                     step={100}
-                    className="mt-2"
+                    className="mt-4"
                   />
                 </div>
 
                 {/* Filter Actions */}
-                <div className="flex gap-3">
-                  <Button onClick={handlePriceFilter} className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-6">
+                <div className="flex gap-3 pt-2">
+                  <Button onClick={handlePriceFilter} className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-8">
                     Apply Filters
                   </Button>
-                  <Button variant="outline" onClick={clearFilters} className="border-gray-300 text-gray-700 hover:bg-white rounded-full px-6">
+                  <Button variant="outline" onClick={clearFilters} className="border-gray-200 text-gray-700 hover:bg-[#f5ecdf] hover:border-gray-900 rounded-full px-8">
                     Clear All
                   </Button>
                 </div>
@@ -324,18 +324,18 @@ export function MarketplacePage() {
 
         {/* Results Header */}
         <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-600">
+          <p className="text-gray-600 font-medium">
             {loading ? 'Searching...' : `${pagination.totalItems} services found`}
           </p>
           <div className="flex items-center gap-2">
             <SortAsc className="w-4 h-4 text-gray-600" />
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-48 bg-white border-gray-300">
+              <SelectTrigger className="w-48 bg-white border-gray-200 rounded-full focus:ring-2 focus:ring-gray-900 focus:border-transparent">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border-gray-200 rounded-2xl">
                 {sortOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem key={option.value} value={option.value} className="text-gray-900 hover:bg-[#f5ecdf] focus:bg-[#f5ecdf] rounded-xl">
                     {option.label}
                   </SelectItem>
                 ))}
