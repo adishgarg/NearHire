@@ -97,19 +97,19 @@ export function GigDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
+      <div className="min-h-screen bg-[#f5ecdf] text-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
   if (!gig) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#f5ecdf] text-gray-900 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Gig Not Found</h1>
           <Link href="/marketplace">
-            <Button variant="outline" className="border-zinc-700">
+            <Button variant="outline" className="border-gray-300 hover:bg-white">
               Back to Marketplace
             </Button>
           </Link>
@@ -122,13 +122,13 @@ export function GigDetailPage() {
   const displayRating = gig.averageRating || gig.rating;
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto py-8">
+    <div className="min-h-screen bg-[#f5ecdf] text-gray-900">
+      <div className="container mx-auto py-8 px-4">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <div className="flex items-center gap-2 text-sm text-zinc-400">
-            <Link href="/marketplace" className="hover:text-white">
-              <Button variant="ghost" size="sm" className="p-0 h-auto">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Link href="/marketplace" className="hover:text-gray-900">
+              <Button variant="ghost" size="sm" className="p-0 h-auto hover:bg-transparent">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Marketplace
               </Button>
@@ -136,7 +136,7 @@ export function GigDetailPage() {
             <span>/</span>
             <span className="capitalize">{gig.category.name}</span>
             <span>/</span>
-            <span className="text-white truncate">{gig.title}</span>
+            <span className="text-gray-900 truncate font-medium">{gig.title}</span>
           </div>
         </div>
 
@@ -144,12 +144,12 @@ export function GigDetailPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Image Gallery */}
-            <Card className="border-zinc-800 bg-zinc-900 overflow-hidden">
+            <Card className="border-gray-200 bg-white overflow-hidden shadow-sm">
               <CardContent className="p-0">
                 {gig.images.length > 0 ? (
                   <div className="space-y-4">
                     {/* Main Image */}
-                    <div className="relative h-96 bg-zinc-800">
+                    <div className="relative h-96 bg-gray-100">
                       <Image
                         src={gig.images[selectedImage]}
                         alt={gig.title}
@@ -167,8 +167,8 @@ export function GigDetailPage() {
                             onClick={() => setSelectedImage(index)}
                             className={`relative flex-shrink-0 w-20 h-20 border-2 rounded-lg overflow-hidden transition-colors ${
                               selectedImage === index
-                                ? 'border-emerald-500'
-                                : 'border-zinc-700 hover:border-zinc-600'
+                                ? 'border-gray-900'
+                                : 'border-gray-300 hover:border-gray-400'
                             }`}
                           >
                             <Image
@@ -183,7 +183,7 @@ export function GigDetailPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="h-96 bg-zinc-800 flex items-center justify-center">
+                  <div className="h-96 bg-gray-100 flex items-center justify-center">
                     <span className="text-6xl opacity-50">📷</span>
                   </div>
                 )}
@@ -195,22 +195,22 @@ export function GigDetailPage() {
               {/* Title and Actions */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-white mb-2">{gig.title}</h1>
-                  <div className="flex items-center gap-4 text-sm text-zinc-400">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{gig.title}</h1>
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <Avatar className="w-6 h-6">
                         <AvatarImage src={gig.seller.image || ''} alt={gig.seller.name} />
                         <AvatarFallback>{gig.seller.name[0]}</AvatarFallback>
                       </Avatar>
-                      <span className="text-white">{gig.seller.name}</span>
+                      <span className="text-gray-900 font-medium">{gig.seller.name}</span>
                       {gig.seller.isOnline && (
-                        <Badge className="bg-emerald-600 text-white text-xs">Online</Badge>
+                        <Badge className="bg-green-600 text-white text-xs">Online</Badge>
                       )}
                     </div>
                     <span>•</span>
                     <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-yellow-400">{displayRating.toFixed(1)}</span>
+                      <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                      <span className="text-yellow-600 font-medium">{displayRating.toFixed(1)}</span>
                       <span>({gig.reviewCount})</span>
                     </div>
                     <span>•</span>
@@ -226,11 +226,11 @@ export function GigDetailPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsFavorited(!isFavorited)}
-                    className={`border-zinc-700 ${isFavorited ? 'text-red-500' : 'text-zinc-400'}`}
+                    className={`border-gray-300 hover:bg-white ${isFavorited ? 'text-red-500' : 'text-gray-600'}`}
                   >
                     <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
                   </Button>
-                  <Button variant="outline" size="sm" className="border-zinc-700 text-zinc-400">
+                  <Button variant="outline" size="sm" className="border-gray-300 text-gray-600 hover:bg-white">
                     <Share2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -239,7 +239,7 @@ export function GigDetailPage() {
               {/* Tags */}
               <div className="flex flex-wrap gap-2">
                 {gig.tags.map((tag) => (
-                  <Badge key={tag} variant="outline" className="border-zinc-700 text-zinc-300">
+                  <Badge key={tag} variant="outline" className="border-gray-300 text-gray-700 bg-white">
                     {tag}
                   </Badge>
                 ))}
@@ -247,20 +247,20 @@ export function GigDetailPage() {
 
               {/* Tabbed Content */}
               <Tabs defaultValue="description" className="space-y-4">
-                <TabsList className="bg-zinc-900 border-zinc-800">
-                  <TabsTrigger value="description" className="data-[state=active]:bg-emerald-600">
+                <TabsList className="bg-white border border-gray-200">
+                  <TabsTrigger value="description" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white">
                     Description
                   </TabsTrigger>
-                  <TabsTrigger value="reviews" className="data-[state=active]:bg-emerald-600">
+                  <TabsTrigger value="reviews" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white">
                     Reviews ({gig.reviewCount})
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="description" className="space-y-4">
-                  <Card className="border-zinc-800 bg-zinc-900">
+                  <Card className="border-gray-200 bg-white shadow-sm">
                     <CardContent className="p-6">
-                      <div className="prose prose-invert max-w-none">
-                        <p className="text-zinc-300 leading-relaxed">
+                      <div className="prose max-w-none">
+                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                           {gig.description}
                         </p>
                       </div>
@@ -271,7 +271,7 @@ export function GigDetailPage() {
                 <TabsContent value="reviews" className="space-y-4">
                   {gig.reviews.length > 0 ? (
                     gig.reviews.map((review) => (
-                      <Card key={review.id} className="border-zinc-800 bg-zinc-900">
+                      <Card key={review.id} className="border-gray-200 bg-white shadow-sm">
                         <CardContent className="p-6">
                           <div className="flex items-start gap-4">
                             <Avatar className="w-10 h-10">
@@ -280,33 +280,33 @@ export function GigDetailPage() {
                             </Avatar>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
-                                <span className="font-medium text-white">{review.reviewer.name}</span>
+                                <span className="font-medium text-gray-900">{review.reviewer.name}</span>
                                 <div className="flex items-center gap-1">
                                   {Array.from({ length: 5 }).map((_, i) => (
                                     <Star
                                       key={i}
                                       className={`w-4 h-4 ${
                                         i < review.rating
-                                          ? 'fill-yellow-400 text-yellow-400'
-                                          : 'text-zinc-600'
+                                          ? 'fill-yellow-500 text-yellow-500'
+                                          : 'text-gray-300'
                                       }`}
                                     />
                                   ))}
                                 </div>
-                                <span className="text-sm text-zinc-400">
+                                <span className="text-sm text-gray-500">
                                   {new Date(review.createdAt).toLocaleDateString()}
                                 </span>
                               </div>
-                              <p className="text-zinc-300">{review.comment}</p>
+                              <p className="text-gray-700">{review.comment}</p>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
                     ))
                   ) : (
-                    <Card className="border-zinc-800 bg-zinc-900">
+                    <Card className="border-gray-200 bg-white shadow-sm">
                       <CardContent className="p-6 text-center">
-                        <p className="text-zinc-400">No reviews yet</p>
+                        <p className="text-gray-500">No reviews yet</p>
                       </CardContent>
                     </Card>
                   )}
@@ -318,13 +318,13 @@ export function GigDetailPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Pricing Card */}
-            <Card className="border-zinc-800 bg-zinc-900 sticky top-8">
+            <Card className="border-gray-200 bg-white shadow-sm sticky top-8">
               <CardHeader>
                 <CardTitle className="text-center">
-                  <div className="text-3xl font-bold text-emerald-400">
+                  <div className="text-3xl font-bold text-gray-900">
                     ${displayPrice}
                   </div>
-                  <div className="text-sm text-zinc-400 mt-1">
+                  <div className="text-sm text-gray-600 mt-1">
                     <Clock className="w-4 h-4 inline mr-1" />
                     {gig.deliveryTime} day delivery
                   </div>
@@ -333,7 +333,7 @@ export function GigDetailPage() {
               <CardContent className="space-y-4">
                 <Button 
                   onClick={handleOrderNow}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="w-full bg-gray-900 hover:bg-gray-800 text-white"
                   size="lg"
                 >
                   Order Now
@@ -341,7 +341,7 @@ export function GigDetailPage() {
                 <Button 
                   onClick={handleContactSeller}
                   variant="outline" 
-                  className="w-full border-zinc-700 text-zinc-300"
+                  className="w-full border-gray-300 text-gray-900 hover:bg-gray-50"
                   size="lg"
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
@@ -351,9 +351,9 @@ export function GigDetailPage() {
             </Card>
 
             {/* Seller Card */}
-            <Card className="border-zinc-800 bg-zinc-900">
+            <Card className="border-gray-200 bg-white shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg">About the Seller</CardTitle>
+                <CardTitle className="text-lg text-gray-900">About the Seller</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -362,25 +362,25 @@ export function GigDetailPage() {
                     <AvatarFallback>{gig.seller.name[0]}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h4 className="font-medium text-white">{gig.seller.name}</h4>
+                    <h4 className="font-medium text-gray-900">{gig.seller.name}</h4>
                     <div className="flex items-center gap-1 text-sm">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span className="text-yellow-400">{gig.seller.rating.toFixed(1)}</span>
-                      <span className="text-zinc-400">({gig.seller.reviewCount})</span>
+                      <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                      <span className="text-yellow-600 font-medium">{gig.seller.rating.toFixed(1)}</span>
+                      <span className="text-gray-500">({gig.seller.reviewCount})</span>
                     </div>
                   </div>
                 </div>
 
-                <Separator className="bg-zinc-800" />
+                <Separator className="bg-gray-200" />
 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Response Time</span>
-                    <span className="text-white">{gig.seller.responseTime || 'Within 1 hour'}</span>
+                    <span className="text-gray-600">Response Time</span>
+                    <span className="text-gray-900 font-medium">{gig.seller.responseTime || 'Within 1 hour'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Last Seen</span>
-                    <span className={`${gig.seller.isOnline ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                    <span className="text-gray-600">Last Seen</span>
+                    <span className={`font-medium ${gig.seller.isOnline ? 'text-green-600' : 'text-gray-600'}`}>
                       {gig.seller.isOnline ? 'Online now' : gig.seller.lastSeen || 'Recently'}
                     </span>
                   </div>
@@ -389,7 +389,7 @@ export function GigDetailPage() {
                 <Button 
                   onClick={handleContactSeller}
                   variant="outline" 
-                  className="w-full border-zinc-700 text-zinc-300"
+                  className="w-full border-gray-300 text-gray-900 hover:bg-gray-50"
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Contact Me
