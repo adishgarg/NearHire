@@ -151,9 +151,9 @@ export function Header() {
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       className="text-gray-600 hover:bg-gray-50 focus:bg-gray-50 cursor-pointer"
-                      onClick={() => router.push('/gigs/manage')}
+                      onClick={() => router.push('/dashboard/my-gigs')}
                     >
-                      My Services
+                      My Gigs
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-gray-200" />
                     <DropdownMenuItem 

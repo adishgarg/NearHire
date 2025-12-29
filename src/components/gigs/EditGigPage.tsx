@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { FileUpload } from '@/components/FileUpload';
-import { ArrowLeft, Upload, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, X, Loader2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 const categories = [
   { id: 'graphics-design', name: 'Graphics & Design' },
@@ -24,20 +25,54 @@ const categories = [
   { id: 'lifestyle', name: 'Lifestyle' },
 ];
 
-export function CreateGigPage() {
+interface EditGigPageProps {
+  gig: {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    deliveryTime: number;
+    tags: string[];
+    images: string[];
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+  };
+}
+
+export function EditGigPage({ gig }: EditGigPageProps) {
   const router = useRouter();
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [deliveryTime, setDeliveryTime] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
+  const [title, setTitle] = useState(gig.title);
+  const [category, setCategory] = useState(gig.category.slug);
+  const [description, setDescription] = useState(gig.description);
+  const [price, setPrice] = useState(String(gig.price));
+  const [deliveryTime, setDeliveryTime] = useState(String(gig.deliveryTime));
+  const [tags, setTags] = useState<string[]>(gig.tags);
   const [currentTag, setCurrentTag] = useState('');
-  const [images, setImages] = useState<Array<{url: string; publicId: string}>>([]);
+  const [existingImages, setExistingImages] = useState<string[]>(gig.images);
+  const [newImages, setNewImages] = useState<Array<{url: string; publicId: string}>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    // Track if any changes have been made
+    const changed = 
+      title !== gig.title ||
+      description !== gig.description ||
+      price !== String(gig.price) ||
+      deliveryTime !== String(gig.deliveryTime) ||
+      category !== gig.category.slug ||
+      JSON.stringify(tags) !== JSON.stringify(gig.tags) ||
+      existingImages.length !== gig.images.length ||
+      newImages.length > 0;
+    
+    setHasChanges(changed);
+  }, [title, description, price, deliveryTime, category, tags, existingImages, newImages, gig]);
 
   const handleAddTag = () => {
-    if (currentTag.trim() && tags.length < 5) {
+    if (currentTag.trim() && tags.length < 5 && !tags.includes(currentTag.trim())) {
       setTags([...tags, currentTag.trim()]);
       setCurrentTag('');
     }
@@ -45,6 +80,10 @@ export function CreateGigPage() {
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleRemoveExistingImage = (imageUrl: string) => {
+    setExistingImages(existingImages.filter(img => img !== imageUrl));
   };
 
   const handleSubmit = async () => {
@@ -79,23 +118,24 @@ export function CreateGigPage() {
     }
 
     setIsSubmitting(true);
-    const toastId = toast.loading('Creating your gig...');
+    const toastId = toast.loading('Updating your gig...');
 
     try {
+      // Combine existing and new images
+      const allImages = [...existingImages, ...newImages.map(img => img.url)];
+
       const gigData = {
         title: title.trim(),
         description: description.trim(),
         category,
         tags,
-        basicPrice: Number(price),
-        basicDescription: description.trim(),
-        basicDeliveryTime: Number(deliveryTime),
-        basicRevisions: 1,
-        images: images.map(img => img.url)
+        price: Number(price),
+        deliveryTime: Number(deliveryTime),
+        images: allImages
       };
 
-      const response = await fetch('/api/gigs', {
-        method: 'POST',
+      const response = await fetch(`/api/gigs/${gig.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(gigData),
       });
@@ -103,26 +143,48 @@ export function CreateGigPage() {
       const result = await response.json();
 
       if (response.ok) {
-        toast.success('Gig created successfully!', { id: toastId });
-        router.push(`/gigs/${result.gig.id}`);
+        toast.success('Gig updated successfully!', { id: toastId });
+        router.push(`/gigs/${gig.id}`);
+        router.refresh();
       } else {
-        throw new Error(result.error || 'Failed to create gig');
+        throw new Error(result.error || 'Failed to update gig');
       }
     } catch (error) {
-      console.error('Error creating gig:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create gig. Please try again.';
+      console.error('Error updating gig:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update gig. Please try again.';
       toast.error(errorMessage, { id: toastId });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleCancel = () => {
+    if (hasChanges) {
+      if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+        router.push(`/gigs/${gig.id}`);
+      }
+    } else {
+      router.push(`/gigs/${gig.id}`);
+    }
+  };
+
+  const allImages = [...existingImages, ...newImages.map(img => img.url)];
+
   return (
     <div className="min-h-screen bg-[#e6ddcf]">
       <div className="container mx-auto px-4 py-8">
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="mb-2 text-4xl font-serif font-semibold text-gray-900">Create a New Gig</h1>
-          <p className="text-gray-600">Fill in the details to create your service listing</p>
+          <Button
+            variant="ghost"
+            className="mb-4 text-gray-600 hover:text-gray-900"
+            onClick={handleCancel}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Gig
+          </Button>
+          <h1 className="mb-2 text-4xl font-serif font-semibold text-gray-900">Edit Gig</h1>
+          <p className="text-gray-600">Update your service listing details</p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -141,6 +203,7 @@ export function CreateGigPage() {
                     className="mt-2 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
+                    maxLength={80}
                   />
                   <p className="mt-1 text-xs text-gray-500">{title.length}/80 characters</p>
                 </div>
@@ -173,6 +236,7 @@ export function CreateGigPage() {
                     className="mt-2 min-h-[150px] bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    maxLength={1200}
                   />
                   <p className="mt-1 text-xs text-gray-500">{description.length}/1200 characters</p>
                 </div>
@@ -238,6 +302,7 @@ export function CreateGigPage() {
                     className="mt-2 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
+                    min="5"
                   />
                 </div>
 
@@ -273,12 +338,47 @@ export function CreateGigPage() {
             <Card className="border-gray-200 bg-white p-6 rounded-3xl">
               <h2 className="mb-6 text-gray-900 font-serif text-xl font-semibold">Gallery</h2>
               
-              <FileUpload
-                onUpload={setImages}
-                maxFiles={5}
-                folder="gigs"
-                existingFiles={images}
-              />
+              {/* Existing Images */}
+              {existingImages.length > 0 && (
+                <div className="mb-4">
+                  <Label className="text-gray-700 mb-2 block">Current Images</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {existingImages.map((imageUrl, index) => (
+                      <div key={imageUrl} className="relative group">
+                        <div className="relative h-32 rounded-2xl overflow-hidden bg-gray-100">
+                          <Image
+                            src={imageUrl}
+                            alt={`Gig image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
+                          onClick={() => handleRemoveExistingImage(imageUrl)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Upload New Images */}
+              <div>
+                <Label className="text-gray-700 mb-2 block">
+                  {existingImages.length > 0 ? 'Add More Images' : 'Upload Images'}
+                </Label>
+                <FileUpload
+                  onUpload={setNewImages}
+                  maxFiles={5 - existingImages.length}
+                  folder="gigs"
+                  existingFiles={newImages}
+                />
+              </div>
             </Card>
           </div>
 
@@ -290,9 +390,9 @@ export function CreateGigPage() {
                 
                 <div className="space-y-4">
                   <div className="bg-gray-100 rounded-2xl h-48 flex items-center justify-center overflow-hidden">
-                    {images.length > 0 ? (
+                    {allImages.length > 0 ? (
                       <img 
-                        src={images[0].url} 
+                        src={allImages[0]} 
                         alt="Gig preview" 
                         className="w-full h-full object-cover"
                       />
@@ -330,24 +430,32 @@ export function CreateGigPage() {
                 <Button 
                   className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-full"
                   onClick={handleSubmit}
-                  disabled={!title || !category || !description || !price || !deliveryTime || isSubmitting}
+                  disabled={!hasChanges || isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Publishing...
+                      Updating...
                     </>
                   ) : (
-                    'Publish Gig'
+                    'Update Gig'
                   )}
                 </Button>
                 <Button 
                   variant="outline" 
                   className="w-full border-gray-300 text-gray-700 hover:bg-white rounded-full"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
                 >
-                  Save as Draft
+                  Cancel
                 </Button>
               </div>
+
+              {hasChanges && (
+                <p className="mt-4 text-sm text-amber-600 text-center">
+                  You have unsaved changes
+                </p>
+              )}
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { auth } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
@@ -113,12 +114,53 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
     const { id } = await context.params;
     const body = await request.json();
+    
+    // Verify ownership
+    const existingGig = await prisma.gig.findUnique({
+      where: { id },
+      select: { sellerId: true, categoryId: true }
+    });
+
+    if (!existingGig) {
+      return NextResponse.json(
+        { error: 'Gig not found' },
+        { status: 404 }
+      );
+    }
+
+    if (existingGig.sellerId !== user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
     
     const {
       title,
       description,
+      category,
       price,
       deliveryTime,
       tags,
@@ -126,16 +168,60 @@ export async function PUT(
       isActive
     } = body;
 
+    // Validation
+    if (title && title.length > 80) {
+      return NextResponse.json(
+        { error: 'Title must be 80 characters or less' },
+        { status: 400 }
+      );
+    }
+
+    if (description && description.length > 1200) {
+      return NextResponse.json(
+        { error: 'Description must be 1200 characters or less' },
+        { status: 400 }
+      );
+    }
+
+    if (price && price < 5) {
+      return NextResponse.json(
+        { error: 'Minimum price is $5' },
+        { status: 400 }
+      );
+    }
+
+    // Handle category change if provided
+    let categoryId = existingGig.categoryId;
+    if (category) {
+      let categoryRecord = await prisma.category.findFirst({
+        where: { slug: category }
+      });
+
+      if (!categoryRecord) {
+        // Create a basic category if it doesn't exist
+        categoryRecord = await prisma.category.create({
+          data: {
+            name: category.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+            slug: category,
+            icon: '📂',
+            image: '/placeholder-category.jpg',
+          }
+        });
+      }
+      categoryId = categoryRecord.id;
+    }
+
     const gig = await prisma.gig.update({
       where: { id },
       data: {
         ...(title && { title }),
         ...(description && { description }),
+        ...(category && { categoryId }),
         ...(price && { price }),
         ...(deliveryTime && { deliveryTime }),
         ...(tags && { tags }),
         ...(images && { images }),
-        ...(typeof isActive === 'boolean' && { isActive }),
+        ...(isActive !== undefined && { isActive })
       },
       include: {
         category: true,
@@ -162,6 +248,8 @@ export async function PUT(
       { error: 'Internal server error' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -170,7 +258,47 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
     const { id } = await context.params;
+
+    // Verify ownership
+    const existingGig = await prisma.gig.findUnique({
+      where: { id },
+      select: { sellerId: true }
+    });
+
+    if (!existingGig) {
+      return NextResponse.json(
+        { error: 'Gig not found' },
+        { status: 404 }
+      );
+    }
+
+    if (existingGig.sellerId !== user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
 
     await prisma.gig.delete({
       where: { id }
@@ -187,5 +315,7 @@ export async function DELETE(
       { error: 'Internal server error' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
