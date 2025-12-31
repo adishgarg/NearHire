@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, Clock, Eye, Heart, Share2, ArrowLeft, MessageSquare } from 'lucide-react';
+import { Star, Clock, Eye, Heart, Share2, ArrowLeft, MessageSquare, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 
@@ -25,6 +25,8 @@ interface Gig {
   orderCount: number;
   images: string[];
   tags: string[];
+  city?: string | null;
+  address?: string | null;
   category: {
     name: string;
     slug: string;
@@ -218,6 +220,15 @@ export function GigDetailPage() {
                       <Eye className="w-4 h-4" />
                       <span>{gig.views} views</span>
                     </div>
+                    {gig.city && (
+                      <>
+                        <span>•</span>
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          <span>{gig.city}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -328,6 +339,12 @@ export function GigDetailPage() {
                     <Clock className="w-4 h-4 inline mr-1" />
                     {gig.deliveryTime} day delivery
                   </div>
+                  {gig.city && (
+                    <div className="text-sm text-gray-600 mt-2">
+                      <MapPin className="w-4 h-4 inline mr-1" />
+                      {gig.city}
+                    </div>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">

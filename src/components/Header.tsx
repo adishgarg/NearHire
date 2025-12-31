@@ -14,10 +14,21 @@ import { Badge } from './ui/badge';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 export function Header() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
@@ -32,7 +43,30 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200/50 bg-[#f5ecdf]/95 backdrop-blur supports-[backdrop-filter]:bg-[#f5ecdf]/80">
+    <header 
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled 
+          ? 'border-b border-white/20' 
+          : 'border-b border-transparent'
+      }`}
+      style={{
+        background: scrolled 
+          ? 'rgba(245, 236, 223, 0.25)'
+          : 'rgba(245, 236, 223, 0.1)',
+        backdropFilter: scrolled 
+          ? 'blur(16px) saturate(1.8) brightness(1.05)'
+          : 'blur(12px) saturate(1.5) brightness(1.02)',
+        WebkitBackdropFilter: scrolled 
+          ? 'blur(16px) saturate(1.8) brightness(1.05)'
+          : 'blur(12px) saturate(1.5) brightness(1.02)',
+        boxShadow: scrolled
+          ? `0 4px 24px 0 rgba(31, 38, 135, 0.08),
+             0 2px 12px 0 rgba(31, 38, 135, 0.04),
+             inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
+             inset 0 -1px 0 0 rgba(255, 255, 255, 0.25)`
+          : 'inset 0 1px 0 0 rgba(255, 255, 255, 0.3)',
+      }}
+    >
       <div className="container mx-auto px-10">
         <div className="flex h-16 items-center justify-between">
           {/* Left: Desktop Navigation */}

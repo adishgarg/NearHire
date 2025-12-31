@@ -164,6 +164,13 @@ model Gig {
   tags           String[]
   features       String[]
   images         String[]
+  
+  // Location fields
+  city           String?
+  address        String?
+  latitude       Float?
+  longitude      Float?
+  
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
   

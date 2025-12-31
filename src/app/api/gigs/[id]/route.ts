@@ -165,7 +165,11 @@ export async function PUT(
       deliveryTime,
       tags,
       images,
-      isActive
+      isActive,
+      city,
+      address,
+      latitude,
+      longitude,
     } = body;
 
     // Validation
@@ -221,7 +225,11 @@ export async function PUT(
         ...(deliveryTime && { deliveryTime }),
         ...(tags && { tags }),
         ...(images && { images }),
-        ...(isActive !== undefined && { isActive })
+        ...(isActive !== undefined && { isActive }),
+        ...(city !== undefined && { city }),
+        ...(address !== undefined && { address }),
+        ...(latitude !== undefined && { latitude }),
+        ...(longitude !== undefined && { longitude }),
       },
       include: {
         category: true,

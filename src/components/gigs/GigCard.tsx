@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, Heart, Clock, Eye } from 'lucide-react';
+import { Star, Heart, Clock, Eye, MapPin } from 'lucide-react';
 import { useState } from 'react';
 
 interface Gig {
@@ -35,6 +35,9 @@ interface Gig {
   };
   averageRating?: number;
   startingPrice?: number;
+  city?: string | null;
+  address?: string | null;
+  distance?: number | null;
 }
 
 interface GigCardProps {
@@ -217,6 +220,17 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
               <Clock className="w-3 h-3" />
               <span>{gig.deliveryTime} day{gig.deliveryTime !== 1 ? 's' : ''}</span>
             </div>
+
+            {(gig.city || gig.distance !== null && gig.distance !== undefined) && (
+              <div className="flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {gig.distance !== null && gig.distance !== undefined ? (
+                  <span>{gig.distance < 1 ? '< 1' : gig.distance.toFixed(0)} km away</span>
+                ) : (
+                  <span>{gig.city}</span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Price */}

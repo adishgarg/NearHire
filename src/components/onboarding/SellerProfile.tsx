@@ -92,27 +92,27 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <Card className="w-full max-w-3xl border-zinc-800 bg-zinc-900">
+    <div className="min-h-screen bg-[#e6ddcf] flex items-center justify-center p-4">
+      <Card className="w-full max-w-3xl border-gray-200 bg-white rounded-3xl shadow-sm">
         <CardHeader className="text-center">
-          <div className="mx-auto h-16 w-16 rounded-full bg-emerald-600 flex items-center justify-center mb-4">
+          <div className="mx-auto h-16 w-16 rounded-full bg-gray-900 flex items-center justify-center mb-4">
             <Briefcase className="h-8 w-8 text-white" />
           </div>
-          <CardTitle className="text-2xl text-white mb-2">
+          <CardTitle className="text-2xl text-gray-900 mb-2 font-serif">
             Complete Your Seller Profile
           </CardTitle>
-          <p className="text-zinc-400">
+          <p className="text-gray-600">
             Showcase your skills and experience to attract the right clients
           </p>
           <div className="mt-4">
             <Progress value={progress} className="h-2" />
-            <p className="text-sm text-zinc-500 mt-2">{Math.round(progress)}% complete</p>
+            <p className="text-sm text-gray-700 mt-2 font-medium">{Math.round(progress)}% complete</p>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
           <div>
-            <Label htmlFor="bio" className="text-zinc-300">
+            <Label htmlFor="bio" className="text-gray-700">
               Professional Bio *
             </Label>
             <Textarea
@@ -120,13 +120,13 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
               placeholder="Describe your professional background, expertise, and what makes you unique..."
               value={formData.bio}
               onChange={(e) => handleInputChange('bio', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-2"
+              className="bg-white border-gray-200 text-gray-900 mt-2 rounded-xl"
               rows={3}
             />
           </div>
 
           <div>
-            <Label className="text-zinc-300 mb-3 block">
+            <Label className="text-gray-700 mb-3 block">
               Your Skills & Expertise * (Select all that apply)
             </Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
@@ -134,10 +134,10 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
                 <Badge
                   key={skill}
                   variant={formData.skills?.includes(skill) ? "default" : "outline"}
-                  className={`cursor-pointer text-center justify-center py-2 ${
+                  className={`cursor-pointer text-center justify-center py-2 rounded-full ${
                     formData.skills?.includes(skill)
-                      ? 'bg-emerald-600 text-white border-emerald-600'
-                      : 'border-zinc-600 text-zinc-300 hover:border-emerald-500'
+                      ? 'bg-gray-900 text-white border-gray-900'
+                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
                   }`}
                   onClick={() => toggleSkill(skill)}
                 >
@@ -146,7 +146,7 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
               ))}
             </div>
             {formData.skills && formData.skills.length > 0 && (
-              <p className="text-sm text-zinc-500 mt-2">
+              <p className="text-sm text-gray-600 mt-2">
                 {formData.skills.length} skill{formData.skills.length !== 1 ? 's' : ''} selected
               </p>
             )}
@@ -154,7 +154,7 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="hourlyRate" className="text-zinc-300">
+              <Label htmlFor="hourlyRate" className="text-gray-700">
                 <DollarSign className="inline h-4 w-4 mr-2" />
                 Hourly Rate (USD) *
               </Label>
@@ -163,14 +163,14 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
                 placeholder="25"
                 value={formData.hourlyRate}
                 onChange={(e) => handleInputChange('hourlyRate', e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-2"
+                className="bg-white border-gray-200 text-gray-900 mt-2 rounded-xl"
                 type="number"
                 min="1"
               />
             </div>
 
             <div>
-              <Label htmlFor="experience" className="text-zinc-300">
+              <Label htmlFor="experience" className="text-gray-700">
                 <Award className="inline h-4 w-4 mr-2" />
                 Years of Experience *
               </Label>
@@ -178,12 +178,12 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
                 value={formData.experience} 
                 onValueChange={(value) => handleInputChange('experience', value)}
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white mt-2">
+                <SelectTrigger className="bg-white border-gray-200 text-gray-900 mt-2 rounded-xl">
                   <SelectValue placeholder="Select experience level" />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
+                <SelectContent className="bg-white border-gray-200">
                   {experienceOptions.map((option) => (
-                    <SelectItem key={option} value={option} className="text-white hover:bg-zinc-700">
+                    <SelectItem key={option} value={option} className="text-gray-900 hover:bg-gray-100">
                       {option}
                     </SelectItem>
                   ))}
@@ -193,7 +193,7 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
           </div>
 
           <div>
-            <Label htmlFor="availability" className="text-zinc-300">
+            <Label htmlFor="availability" className="text-gray-700">
               <Calendar className="inline h-4 w-4 mr-2" />
               Availability
             </Label>
@@ -201,12 +201,12 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
               value={formData.availability} 
               onValueChange={(value) => handleInputChange('availability', value)}
             >
-              <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white mt-2">
+              <SelectTrigger className="bg-white border-gray-200 text-gray-900 mt-2 rounded-xl">
                 <SelectValue placeholder="Select your availability" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-800 border-zinc-700">
+              <SelectContent className="bg-white border-gray-200">
                 {availabilityOptions.map((option) => (
-                  <SelectItem key={option} value={option} className="text-white hover:bg-zinc-700">
+                  <SelectItem key={option} value={option} className="text-gray-900 hover:bg-gray-100">
                     {option}
                   </SelectItem>
                 ))}
@@ -216,7 +216,7 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="location" className="text-zinc-300">
+              <Label htmlFor="location" className="text-gray-700">
                 <MapPin className="inline h-4 w-4 mr-2" />
                 Location
               </Label>
@@ -225,12 +225,12 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
                 placeholder="City, Country"
                 value={formData.location}
                 onChange={(e) => handleInputChange('location', e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-2"
+                className="bg-white border-gray-200 text-gray-900 mt-2 rounded-xl"
               />
             </div>
 
             <div>
-              <Label htmlFor="phone" className="text-zinc-300">
+              <Label htmlFor="phone" className="text-gray-700">
                 <Phone className="inline h-4 w-4 mr-2" />
                 Phone Number
               </Label>
@@ -239,13 +239,13 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
                 placeholder="+1 (555) 123-4567"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-2"
+                className="bg-white border-gray-200 text-gray-900 mt-2 rounded-xl"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="portfolio" className="text-zinc-300">
+            <Label htmlFor="portfolio" className="text-gray-700">
               <Globe className="inline h-4 w-4 mr-2" />
               Portfolio/Website URL
             </Label>
@@ -254,13 +254,13 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
               placeholder="https://yourportfolio.com"
               value={formData.portfolio}
               onChange={(e) => handleInputChange('portfolio', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-2"
+              className="bg-white border-gray-200 text-gray-900 mt-2 rounded-xl"
             />
           </div>
 
-          <div className="bg-zinc-800 p-4 rounded-lg">
-            <h4 className="text-zinc-300 font-medium mb-2">✨ Pro Tips for Success:</h4>
-            <ul className="text-sm text-zinc-400 space-y-1">
+          <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200">
+            <h4 className="text-gray-900 font-medium mb-2">✨ Pro Tips for Success:</h4>
+            <ul className="text-sm text-gray-600 space-y-1">
               <li>• A complete profile gets 5x more visibility</li>
               <li>• Competitive hourly rates increase your hire rate</li>
               <li>• Portfolio links help clients trust your expertise</li>
@@ -271,13 +271,13 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
             <Button
               variant="outline"
               onClick={onSkip}
-              className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+              className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             >
               Skip for now
             </Button>
             <Button
               onClick={() => onComplete(formData)}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white rounded-full"
             >
               Complete Profile
               <ArrowRight className="ml-2 h-4 w-4" />

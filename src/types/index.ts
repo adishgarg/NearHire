@@ -30,6 +30,10 @@ export interface Gig {
   deliveryTime: string;
   tags: string[];
   features: string[];
+  city?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface Category {

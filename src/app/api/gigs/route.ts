@@ -40,7 +40,11 @@ export async function POST(request: NextRequest) {
       basicPrice,
       basicDescription,
       basicDeliveryTime,
-      images
+      images,
+      city,
+      address,
+      latitude,
+      longitude,
     } = body;
 
     // Validation
@@ -97,6 +101,10 @@ export async function POST(request: NextRequest) {
         price: basicPrice,
         deliveryTime: basicDeliveryTime || 3,
         sellerId: user.id,
+        city: city || null,
+        address: address || null,
+        latitude: latitude || null,
+        longitude: longitude || null,
       },
       include: {
         category: true,
@@ -144,9 +152,12 @@ export async function GET(request: NextRequest) {
     const deliveryTime = searchParams.get('deliveryTime');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
+    const sortBy = searchParams.get('sortBy'); // 'distance', 'price-asc', 'price-desc', 'rating'
+    const userLat = searchParams.get('userLat');
+    const userLon = searchParams.get('userLon');
     
     console.log('🔍 API called with filters:', { 
-      category, search, minPrice, maxPrice, deliveryTime, page, limit 
+      category, search, minPrice, maxPrice, deliveryTime, page, limit, sortBy, userLat, userLon 
     });
     
     const skip = (page - 1) * limit;
@@ -192,6 +203,18 @@ export async function GET(request: NextRequest) {
 
     console.log('🔍 Final where clause:', JSON.stringify(where, null, 2));
 
+    // Determine order by
+    let orderBy: any = { createdAt: 'desc' };
+    
+    if (sortBy === 'price-asc') {
+      orderBy = { price: 'asc' };
+    } else if (sortBy === 'price-desc') {
+      orderBy = { price: 'desc' };
+    } else if (sortBy === 'rating') {
+      orderBy = { rating: 'desc' };
+    }
+    // Note: distance sorting is done in-memory after fetching
+
     // Get gigs with filters
     const [gigs, totalCount] = await Promise.all([
       prisma.gig.findMany({
@@ -218,9 +241,7 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' }
+        orderBy
       }),
       prisma.gig.count({ where })
     ]);
@@ -246,20 +267,51 @@ export async function GET(request: NextRequest) {
       const totalRating = gig.reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
       const averageRating = gig.reviews.length > 0 ? totalRating / gig.reviews.length : 0;
       
+      // Calculate distance if user location is provided
+      let distance = null;
+      if (userLat && userLon && gig.latitude && gig.longitude) {
+        const R = 6371; // Radius of Earth in km
+        const dLat = (gig.latitude - parseFloat(userLat)) * (Math.PI / 180);
+        const dLon = (gig.longitude - parseFloat(userLon)) * (Math.PI / 180);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(parseFloat(userLat) * (Math.PI / 180)) *
+            Math.cos(gig.latitude * (Math.PI / 180)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        distance = R * c; // Distance in km
+      }
+      
       return {
         ...gig,
         price: Number(gig.price), // Convert Decimal to number
         averageRating,
-        startingPrice: Number(gig.price)
+        startingPrice: Number(gig.price),
+        distance
       };
     });
 
+    // Sort by distance if requested
+    if (sortBy === 'distance' && userLat && userLon) {
+      gigsWithRating.sort((a, b) => {
+        // Gigs without location go to the end
+        if (a.distance === null && b.distance === null) return 0;
+        if (a.distance === null) return 1;
+        if (b.distance === null) return -1;
+        return a.distance - b.distance;
+      });
+    }
+
+    // Apply pagination after sorting
+    const paginatedGigs = gigsWithRating.slice(skip, skip + limit);
+
     return NextResponse.json({
-      gigs: gigsWithRating,
+      gigs: paginatedGigs,
       pagination: {
         currentPage: page,
-        totalPages: Math.ceil(totalCount / limit),
-        totalItems: totalCount,
+        totalPages: Math.ceil(gigsWithRating.length / limit),
+        totalItems: gigsWithRating.length,
         itemsPerPage: limit
       }
     }, {

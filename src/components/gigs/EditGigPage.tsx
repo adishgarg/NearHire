@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +34,8 @@ interface EditGigPageProps {
     deliveryTime: number;
     tags: string[];
     images: string[];
+    city?: string | null;
+    address?: string | null;
     category: {
       id: string;
       name: string;
@@ -55,6 +57,13 @@ export function EditGigPage({ gig }: EditGigPageProps) {
   const [newImages, setNewImages] = useState<Array<{url: string; publicId: string}>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [city, setCity] = useState(gig.city || '');
+  const [address, setAddress] = useState(gig.address || '');
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [locationSuggestions, setLocationSuggestions] = useState<Array<{display_name: string; lat: string; lon: string}>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Track if any changes have been made
@@ -84,6 +93,98 @@ export function EditGigPage({ gig }: EditGigPageProps) {
 
   const handleRemoveExistingImage = (imageUrl: string) => {
     setExistingImages(existingImages.filter(img => img !== imageUrl));
+  };
+
+  const handleGetLocation = async () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setIsGettingLocation(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          
+          if (data.address) {
+            const locationCity = data.address.city || data.address.town || data.address.village || '';
+            const locationAddress = data.display_name || '';
+            setCity(locationCity);
+            setAddress(locationAddress);
+            toast.success('Location detected!');
+          }
+        } catch (error) {
+          console.error('Error getting location details:', error);
+          toast.error('Failed to get location details');
+        } finally {
+          setIsGettingLocation(false);
+        }
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        toast.error('Failed to get your location. Please enter it manually.');
+        setIsGettingLocation(false);
+      }
+    );
+  };
+
+  const handleCitySearch = useCallback((searchText: string) => {
+    setCity(searchText);
+    
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    if (searchText.length < 3) {
+      setLocationSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    // Show loading immediately
+    setIsSearchingLocation(true);
+    
+    // Debounce the API call - wait 500ms after user stops typing
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        // Prioritize India for faster/better results - you can change this to your region
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchText)}&countrycodes=in&limit=5&addressdetails=1`
+        );
+        const data = await response.json();
+        setLocationSuggestions(data);
+        setShowSuggestions(data.length > 0);
+      } catch (error) {
+        console.error('Error searching location:', error);
+        setLocationSuggestions([]);
+        setShowSuggestions(false);
+      } finally {
+        setIsSearchingLocation(false);
+      }
+    }, 300); // Wait 300ms after user stops typing
+  }, []);
+
+  const handleSelectLocation = (suggestion: {display_name: string; lat: string; lon: string; address?: any}) => {
+    // Extract city from address object, fallback to first part of display_name
+    const locationCity = suggestion.address?.city || 
+                        suggestion.address?.town || 
+                        suggestion.address?.village || 
+                        suggestion.address?.municipality || 
+                        suggestion.address?.county ||
+                        suggestion.display_name.split(',')[0].trim();
+    
+    setCity(locationCity);
+    setAddress(suggestion.display_name);
+    setShowSuggestions(false);
+    setLocationSuggestions([]);
   };
 
   const handleSubmit = async () => {
@@ -121,6 +222,25 @@ export function EditGigPage({ gig }: EditGigPageProps) {
     const toastId = toast.loading('Updating your gig...');
 
     try {
+      // Get coordinates from address if city is provided
+      let latitude = null;
+      let longitude = null;
+      
+      if (city) {
+        try {
+          const geocodeResponse = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`
+          );
+          const geocodeData = await geocodeResponse.json();
+          if (geocodeData && geocodeData[0]) {
+            latitude = parseFloat(geocodeData[0].lat);
+            longitude = parseFloat(geocodeData[0].lon);
+          }
+        } catch (error) {
+          console.error('Error geocoding location:', error);
+        }
+      }
+
       // Combine existing and new images
       const allImages = [...existingImages, ...newImages.map(img => img.url)];
 
@@ -131,7 +251,11 @@ export function EditGigPage({ gig }: EditGigPageProps) {
         tags,
         price: Number(price),
         deliveryTime: Number(deliveryTime),
-        images: allImages
+        images: allImages,
+        city: city || null,
+        address: address || null,
+        latitude,
+        longitude,
       };
 
       const response = await fetch(`/api/gigs/${gig.id}`, {
@@ -239,6 +363,62 @@ export function EditGigPage({ gig }: EditGigPageProps) {
                     maxLength={1200}
                   />
                   <p className="mt-1 text-xs text-gray-500">{description.length}/1200 characters</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="city" className="text-gray-700">City / Location</Label>
+                  <div className="mt-2 flex gap-2 relative">
+                    <div className="flex-1 relative">
+                      <Input
+                        id="city"
+                        placeholder="Type to search location..."
+                        className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                        value={city}
+                        onChange={(e) => handleCitySearch(e.target.value)}
+                        onFocus={() => city.length >= 3 && setShowSuggestions(true)}
+                      />
+                      {isSearchingLocation && (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-gray-400" />
+                      )}
+                      
+                      {/* Location Suggestions Dropdown */}
+                      {showSuggestions && locationSuggestions.length > 0 && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+                          {locationSuggestions.map((suggestion, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              className="w-full px-4 py-2.5 text-left hover:bg-gray-50 first:rounded-t-2xl last:rounded-b-2xl transition-colors border-b border-gray-100 last:border-b-0"
+                              onClick={() => handleSelectLocation(suggestion)}
+                            >
+                              <div className="text-sm text-gray-900">{suggestion.display_name}</div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-gray-300 text-gray-700 hover:bg-white whitespace-nowrap"
+                      onClick={handleGetLocation}
+                      disabled={isGettingLocation}
+                    >
+                      {isGettingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Detect Location'}
+                    </Button>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">Type at least 3 characters to search or use detect location</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="address" className="text-gray-700">Full Address (Optional)</Label>
+                  <Input
+                    id="address"
+                    placeholder="Street address or area"
+                    className="mt-2 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
                 </div>
 
                 <div>

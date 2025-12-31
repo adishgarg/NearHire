@@ -160,7 +160,7 @@ export function FileUpload({
         <div className="mx-auto flex max-w-sm flex-col items-center justify-center">
           <Upload className="mb-4 h-10 w-10 text-zinc-500" />
           <div className="mb-4">
-            <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+            <p className="text-lg font-medium text-zinc-900 ">
               Drop files here or click to upload
             </p>
             <p className="text-sm text-zinc-500">

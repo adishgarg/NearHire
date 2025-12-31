@@ -64,6 +64,7 @@ const sortOptions = [
   { value: 'price-high', label: 'Price: High to Low' },
   { value: 'rating', label: 'Highest Rated' },
   { value: 'popular', label: 'Most Popular' },
+  { value: 'distance', label: 'Nearest to Me' },
 ];
 
 export function MarketplacePage() {
@@ -83,6 +84,7 @@ export function MarketplacePage() {
   const [maxDeliveryTime, setMaxDeliveryTime] = useState(30);
   const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
+  const [userLocation, setUserLocation] = useState<{lat: number; lon: number} | null>(null);
 
   const fetchGigs = useCallback(async () => {
     console.log('🚀 fetchGigs called with:', { currentPage, searchQuery, selectedCategory });
@@ -111,6 +113,19 @@ export function MarketplacePage() {
       // Only add delivery time filter if it's not the default
       if (maxDeliveryTime !== 30) {
         params.append('deliveryTime', maxDeliveryTime.toString());
+      }
+
+      // Add sorting parameter
+      if (sortBy === 'price-low') {
+        params.append('sortBy', 'price-asc');
+      } else if (sortBy === 'price-high') {
+        params.append('sortBy', 'price-desc');
+      } else if (sortBy === 'rating') {
+        params.append('sortBy', 'rating');
+      } else if (sortBy === 'distance' && userLocation) {
+        params.append('sortBy', 'distance');
+        params.append('userLat', userLocation.lat.toString());
+        params.append('userLon', userLocation.lon.toString());
       }
 
       const url = `/api/gigs?${params}`;
@@ -145,11 +160,29 @@ export function MarketplacePage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchQuery, selectedCategory, priceRange, maxDeliveryTime]);
+  }, [currentPage, searchQuery, selectedCategory, priceRange, maxDeliveryTime, sortBy, userLocation]);
 
   useEffect(() => {
     fetchGigs();
   }, [fetchGigs]);
+
+  // Get user's location when component mounts
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.log('Location access denied or unavailable:', error);
+          // Silently fail - user can still browse without location
+        }
+      );
+    }
+  }, []);
 
   const handleSearch = () => {
     setCurrentPage(1);
