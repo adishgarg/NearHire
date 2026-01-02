@@ -48,6 +48,15 @@ model User {
   emailVerified   DateTime? @map("email_verified")
   image           String?
   password        String?   // For email/password authentication
+  
+  // Email verification tokens
+  emailVerificationToken   String?   @unique @map("email_verification_token")
+  emailVerificationExpires DateTime? @map("email_verification_expires")
+  
+  // Password reset tokens
+  resetPasswordToken       String?   @unique @map("reset_password_token")
+  resetPasswordExpires     DateTime? @map("reset_password_expires")
+  
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   
