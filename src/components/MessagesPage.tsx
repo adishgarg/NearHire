@@ -96,7 +96,7 @@ export function MessagesPage() {
         console.log('✅ Adding message to UI');
         return [...prev, { 
           ...message, 
-          isOwn: message.senderId === session.user.id 
+          isOwn: message.senderId === session.user?.id 
         }];
       });
       
@@ -248,9 +248,9 @@ export function MessagesPage() {
       // Optimistically add message to UI immediately
       const optimisticMessage: Message = {
         id: tempId,
-        senderId: session.user.id,
-        senderName: session.user.name || 'You',
-        senderAvatar: session.user.image,
+        senderId: session.user?.id || '',
+        senderName: session.user?.name || 'You',
+        senderAvatar: session.user?.image || null,
         content: messageContent,
         messageType: 'TEXT',
         attachments: [],
@@ -323,7 +323,7 @@ export function MessagesPage() {
       if (socketRef.current) {
         socketRef.current.emit('typing:stop', {
           conversationId: selectedConversation,
-          userId: session.user.id,
+          userId: session.user?.id,
         });
       }
     }, 2000);
