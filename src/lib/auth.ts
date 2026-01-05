@@ -113,7 +113,7 @@ export const {
           try {
             prisma = await getPrismaClient()
             
-            await prisma.user.upsert({
+            const dbUser = await prisma.user.upsert({
               where: { email: user.email },
               update: {
                 name: user.name || null,
@@ -127,10 +127,13 @@ export const {
               },
             })
             
-            console.log('✅ User saved:', user.email)
+            // CRITICAL: Update the user.id to match the database ID
+            user.id = dbUser.id
+            
+            console.log('✅ User saved with DB ID:', dbUser.id)
           } catch (error) {
             console.error('❌ Database error:', error)
-            // Don't block login on database errors
+            return false // Block login if we can't save to database
           } finally {
             if (prisma) {
               await prisma.$disconnect()
@@ -152,9 +155,35 @@ export const {
       return session
     },
     async jwt({ token, account, user }) {
+      // On sign in (when user object is available)
       if (user) {
-        token.id = user.id
-        token.email = user.email
+        // For OAuth, we need to get the database user ID
+        if (account?.provider === 'google' || account?.provider === 'github') {
+          try {
+            const prisma = await getPrismaClient()
+            const dbUser = await prisma.user.findUnique({
+              where: { email: user.email as string },
+              select: { id: true, email: true, name: true, image: true }
+            })
+            
+            if (dbUser) {
+              token.id = dbUser.id
+              token.email = dbUser.email
+              console.log('✅ JWT token updated with DB user ID:', dbUser.id)
+            }
+            
+            await prisma.$disconnect()
+          } catch (error) {
+            console.error('❌ Error fetching user for JWT:', error)
+            // Fallback to OAuth user ID
+            token.id = user.id
+            token.email = user.email
+          }
+        } else {
+          // For credentials login, use the user ID directly
+          token.id = user.id
+          token.email = user.email
+        }
       }
       if (account) {
         token.accessToken = account.access_token

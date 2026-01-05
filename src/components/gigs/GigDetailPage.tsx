@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star, Clock, Eye, Heart, Share2, ArrowLeft, MessageSquare, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { ContactSellerButton } from '@/components/ContactSellerButton';
 
 interface Gig {
   id: string;
@@ -88,12 +89,6 @@ export function GigDetailPage() {
   const handleOrderNow = () => {
     if (gig) {
       router.push(`/checkout?gigId=${gig.id}`);
-    }
-  };
-
-  const handleContactSeller = () => {
-    if (gig) {
-      router.push(`/messages?sellerId=${gig.seller.id}`);
     }
   };
 
@@ -355,19 +350,17 @@ export function GigDetailPage() {
                 >
                   Order Now
                 </Button>
-                <Button 
-                  onClick={handleContactSeller}
-                  variant="outline" 
+                <ContactSellerButton
+                  sellerId={gig.seller.id}
+                  sellerName={gig.seller.name}
+                  gigId={gig.id}
+                  variant="outline"
                   className="w-full border-gray-300 text-gray-900 hover:bg-gray-50"
-                  size="lg"
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Contact Seller
-                </Button>
+                />
               </CardContent>
             </Card>
 
-            {/* Seller Card */}
+            {/* Seller Info */}
             <Card className="border-gray-200 bg-white shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg text-gray-900">About the Seller</CardTitle>
@@ -403,14 +396,13 @@ export function GigDetailPage() {
                   </div>
                 </div>
 
-                <Button 
-                  onClick={handleContactSeller}
-                  variant="outline" 
+                <ContactSellerButton
+                  sellerId={gig.seller.id}
+                  sellerName={gig.seller.name}
+                  gigId={gig.id}
+                  variant="outline"
                   className="w-full border-gray-300 text-gray-900 hover:bg-gray-50"
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Contact Me
-                </Button>
+                />
               </CardContent>
             </Card>
           </div>
