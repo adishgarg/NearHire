@@ -1,6 +1,13 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization to avoid build-time errors
+let resendInstance: Resend | null = null;
+function getResendClient() {
+  if (!resendInstance && process.env.RESEND_API_KEY) {
+    resendInstance = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendInstance;
+}
 
 const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev';
@@ -13,6 +20,13 @@ interface SendEmailOptions {
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
   try {
+    const resend = getResendClient();
+    
+    if (!resend) {
+      console.error('❌ Resend client not initialized - missing API key');
+      return { success: false, error: 'Email service not configured' };
+    }
+    
     console.log('📤 Attempting to send email:', { 
       to, 
       from: FROM_EMAIL, 
