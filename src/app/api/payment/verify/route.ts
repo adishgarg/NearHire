@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
+import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import { 
   sendOrderConfirmationToBuyer, 
@@ -19,7 +20,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user from database
     const user = await prisma.user.findUnique({
       where: { email: session.user.email }
     });
@@ -32,12 +32,26 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { gigId, requirements, packageType } = body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      gigId,
+      requirements,
+      amount,
+      platformFee
+    } = body;
 
-    // Validation
-    if (!gigId) {
+    // Verify Razorpay signature
+    const sign = razorpay_order_id + '|' + razorpay_payment_id;
+    const expectedSign = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+      .update(sign.toString())
+      .digest('hex');
+
+    if (razorpay_signature !== expectedSign) {
       return NextResponse.json(
-        { error: 'Gig ID is required' },
+        { error: 'Invalid payment signature' },
         { status: 400 }
       );
     }
@@ -57,31 +71,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!gig.isActive) {
-      return NextResponse.json(
-        { error: 'Gig is not available' },
-        { status: 400 }
-      );
-    }
-
-    // Can't buy your own gig
-    if (gig.sellerId === user.id) {
-      return NextResponse.json(
-        { error: 'You cannot order your own service' },
-        { status: 400 }
-      );
-    }
-
-    // Calculate pricing
-    const price = Number(gig.price);
-    const platformFee = price * 0.10; // 10% platform fee
-    const totalAmount = price + platformFee;
-
     // Calculate due date
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + gig.deliveryTime);
 
-    // Create order and conversation in a transaction
+    // Create order and related records in a transaction
     const order = await prisma.$transaction(async (tx) => {
       // Create the order
       const newOrder = await tx.order.create({
@@ -89,7 +83,7 @@ export async function POST(request: NextRequest) {
           gigId: gig.id,
           buyerId: user.id,
           sellerId: gig.sellerId,
-          price: price,
+          price: amount - platformFee,
           platformFee: platformFee,
           requirements: requirements || '',
           dueDate: dueDate,
@@ -116,6 +110,25 @@ export async function POST(request: NextRequest) {
               name: true,
               email: true
             }
+          }
+        }
+      });
+
+      // Create transaction record
+      await tx.transaction.create({
+        data: {
+          orderId: newOrder.id,
+          userId: user.id,
+          amount: amount - platformFee,
+          platformFee: platformFee,
+          type: 'PAYMENT',
+          status: 'COMPLETED',
+          paymentGateway: 'razorpay',
+          paymentId: razorpay_payment_id,
+          metadata: {
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature
           }
         }
       });
@@ -148,6 +161,16 @@ export async function POST(request: NextRequest) {
         where: { id: gig.sellerId },
         data: {
           activeOrders: {
+            increment: 1
+          }
+        }
+      });
+
+      // Update gig order count
+      await tx.gig.update({
+        where: { id: gig.id },
+        data: {
+          orderCount: {
             increment: 1
           }
         }
@@ -202,110 +225,16 @@ export async function POST(request: NextRequest) {
       console.error('Failed to send order notification emails:', err);
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      order,
-      message: 'Order created successfully' 
-    });
-
-  } catch (error) {
-    console.error('Order creation error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    const session = await auth();
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type'); // 'buying' or 'selling'
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    
-    const skip = (page - 1) * limit;
-
-    let where: any = {};
-    
-    if (type === 'buying') {
-      where.buyerId = user.id;
-    } else if (type === 'selling') {
-      where.sellerId = user.id;
-    } else {
-      // Get both buying and selling orders
-      where.OR = [
-        { buyerId: user.id },
-        { sellerId: user.id }
-      ];
-    }
-
-    const orders = await prisma.order.findMany({
-      where,
-      include: {
-        gig: {
-          select: {
-            id: true,
-            title: true,
-            images: true
-          }
-        },
-        buyer: {
-          select: {
-            id: true,
-            name: true,
-            image: true
-          }
-        },
-        seller: {
-          select: {
-            id: true,
-            name: true,
-            image: true
-          }
-        }
-      },
-      skip,
-      take: limit,
-      orderBy: { createdAt: 'desc' }
-    });
-
-    const totalCount = await prisma.order.count({ where });
-
     return NextResponse.json({
-      orders,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalCount / limit),
-        totalItems: totalCount,
-        itemsPerPage: limit
-      }
+      success: true,
+      order,
+      message: 'Payment verified and order created successfully'
     });
 
   } catch (error) {
-    console.error('Orders fetch error:', error);
+    console.error('Payment verification error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Payment verification failed' },
       { status: 500 }
     );
   }

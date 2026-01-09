@@ -113,3 +113,102 @@ export async function GET(request: NextRequest) {
     await prisma.$disconnect()
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await auth()
+    
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const {
+      name,
+      username,
+      bio,
+      location,
+      website,
+      phone,
+      skills,
+      hourlyRate,
+      experience,
+      availability
+    } = body
+
+    // Validate username uniqueness if provided
+    if (username) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          username,
+          NOT: {
+            email: session.user.email
+          }
+        }
+      })
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'Username is already taken' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Prepare update data
+    const updateData: any = {
+      updatedAt: new Date()
+    }
+
+    if (name !== undefined) updateData.name = name
+    if (username !== undefined) updateData.username = username
+    if (bio !== undefined) updateData.bio = bio
+    if (location !== undefined) updateData.location = location
+    if (website !== undefined) updateData.website = website
+    if (phone !== undefined) updateData.phone = phone
+    if (skills !== undefined) updateData.skills = skills
+    if (hourlyRate !== undefined) updateData.hourlyRate = hourlyRate
+    if (experience !== undefined) updateData.experience = experience
+    if (availability !== undefined) updateData.availability = availability
+
+    // Update user profile
+    const updatedUser = await prisma.user.update({
+      where: { email: session.user.email },
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        image: true,
+        bio: true,
+        location: true,
+        website: true,
+        phone: true,
+        skills: true,
+        hourlyRate: true,
+        experience: true,
+        availability: true,
+        updatedAt: true
+      }
+    })
+
+    return NextResponse.json({ 
+      success: true,
+      user: updatedUser,
+      message: 'Profile updated successfully'
+    })
+
+  } catch (error) {
+    console.error('Profile update error:', error)
+    return NextResponse.json(
+      { error: 'Failed to update profile' },
+      { status: 500 }
+    )
+  } finally {
+    await prisma.$disconnect()
+  }
+}

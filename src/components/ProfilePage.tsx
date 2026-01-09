@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { GigCard } from './GigCard';
 import { Star, MapPin, Calendar, Award, VerifiedIcon, MessageSquare, DollarSign, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import Link from 'next/link';
 
 interface ProfilePageProps {
   user: User & {
@@ -63,9 +64,11 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
                 <AvatarFallback className="text-3xl bg-gray-100 text-gray-900">{(user.name || 'U')[0].toUpperCase()}</AvatarFallback>
               </Avatar>
               {isOwnProfile && (
-                <Button variant="outline" className="border-gray-300 text-gray-900 hover:bg-gray-50 rounded-full">
-                  Edit Profile
-                </Button>
+                <Link href="/profile/edit">
+                  <Button variant="outline" className="border-gray-300 text-gray-900 hover:bg-gray-50 rounded-full">
+                    Edit Profile
+                  </Button>
+                </Link>
               )}
             </div>
 
