@@ -223,7 +223,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
         </Button>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Order Details</h1>
+            <h1 className="text-3xl font-bold mb-2 text-gray-900">Order Details</h1>
             <p className="text-gray-600">Order ID: {order.id}</p>
           </div>
           {getStatusBadge(order.status)}
@@ -234,7 +234,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Gig Information */}
-          <Card>
+          <Card className="bg-white border-0 shadow-sm">
             <CardHeader>
               <CardTitle>Service Details</CardTitle>
             </CardHeader>
@@ -246,11 +246,11 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
                   className="w-32 h-32 object-cover rounded-lg"
                 />
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold mb-2">{order.gig.title}</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900">{order.gig.title}</h3>
                   <p className="text-gray-600 text-sm line-clamp-3">{order.gig.description}</p>
                   {order.gig.features.length > 0 && (
                     <div className="mt-3">
-                      <p className="text-sm font-medium mb-2">Included:</p>
+                      <p className="text-sm font-medium mb-2 text-gray-900">Included:</p>
                       <ul className="text-sm text-gray-600 space-y-1">
                         {order.gig.features.slice(0, 3).map((feature, idx) => (
                           <li key={idx} className="flex items-center gap-2">
@@ -268,7 +268,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
 
           {/* Requirements */}
           {order.requirements && (
-            <Card>
+            <Card className="bg-white border-0 shadow-sm">
               <CardHeader>
                 <CardTitle>Order Requirements</CardTitle>
               </CardHeader>
@@ -280,7 +280,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
 
           {/* Progress */}
           {order.status === 'IN_PROGRESS' && isSeller && (
-            <Card>
+            <Card className="bg-white border-0 shadow-sm">
               <CardHeader>
                 <CardTitle>Update Progress</CardTitle>
               </CardHeader>
@@ -288,8 +288,8 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between text-sm mb-2">
-                      <span>Current Progress</span>
-                      <span className="font-medium">{order.progress}%</span>
+                      <span className="text-gray-900">Current Progress</span>
+                      <span className="font-medium text-gray-900">{order.progress}%</span>
                     </div>
                     <Progress value={order.progress} className="h-2" />
                   </div>
@@ -319,7 +319,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Delivery Note</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Delivery Note</label>
                   <Textarea
                     placeholder="Add a message to the buyer..."
                     value={deliveryNote}
@@ -328,8 +328,8 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Upload Deliverables</label>
-                  <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Upload Deliverables</label>
+                  <div className="rounded-lg p-6 text-center bg-gray-50">
                     <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                     <p className="text-sm text-gray-600 mb-2">Click to upload files or drag and drop</p>
                     <Input type="file" multiple className="hidden" id="file-upload" />
@@ -351,20 +351,20 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
 
           {/* Deliverables */}
           {order.deliverables.length > 0 && (
-            <Card>
+            <Card className="bg-white border-0 shadow-sm">
               <CardHeader>
                 <CardTitle>Deliverables</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {order.deliverables.map((file, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={idx} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded flex items-center justify-center">
-                          <Package className="w-5 h-5 text-blue-600" />
+                        <div className="w-10 h-10 bg-amber-100 rounded flex items-center justify-center">
+                          <Package className="w-5 h-5 text-amber-600" />
                         </div>
                         <div>
-                          <p className="font-medium">Deliverable {idx + 1}</p>
+                          <p className="font-medium text-gray-900">Deliverable {idx + 1}</p>
                           <p className="text-sm text-gray-600">Uploaded {order.deliveredAt ? formatDistanceToNow(new Date(order.deliveredAt), { addSuffix: true }) : 'recently'}</p>
                         </div>
                       </div>
@@ -381,7 +381,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
                 </div>
 
                 {order.status === 'DELIVERED' && !isSeller && (
-                  <div className="mt-4 pt-4 border-t">
+                  <div className="mt-4 pt-4">
                     <Button 
                       className="w-full"
                       onClick={handleAcceptDelivery}
@@ -398,13 +398,13 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
 
           {/* Review Section */}
           {order.status === 'COMPLETED' && !order.review && !isSeller && (
-            <Card>
+            <Card className="bg-white border-0 shadow-sm">
               <CardHeader>
                 <CardTitle>Leave a Review</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Rating</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Rating</label>
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map(value => (
                       <button
@@ -420,7 +420,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Your Review</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Your Review</label>
                   <Textarea
                     placeholder="Share your experience..."
                     value={reviewComment}
@@ -441,7 +441,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
 
           {/* Existing Review */}
           {order.review && (
-            <Card>
+            <Card className="bg-white border-0 shadow-sm">
               <CardHeader>
                 <CardTitle>Your Review</CardTitle>
               </CardHeader>
@@ -472,23 +472,23 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Order Summary */}
-          <Card>
+          <Card className="bg-white border-0 shadow-sm">
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Service Price</span>
-                <span className="font-semibold">${Number(order.price).toFixed(2)}</span>
+                <span className="font-semibold text-gray-900">${Number(order.price).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Platform Fee</span>
-                <span className="font-semibold">${Number(order.platformFee).toFixed(2)}</span>
+                <span className="font-semibold text-gray-900">${Number(order.platformFee).toFixed(2)}</span>
               </div>
-              <div className="border-t pt-4">
+              <div className="pt-4">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold">Total</span>
-                  <span className="text-xl font-bold">
+                <span className="font-semibold text-gray-900">Total</span>
+                  <span className="text-xl font-bold text-gray-900\">
                     ${(Number(order.price) + Number(order.platformFee)).toFixed(2)}
                   </span>
                 </div>
@@ -497,7 +497,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
           </Card>
 
           {/* Timeline */}
-          <Card>
+          <Card className="bg-white border-0 shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
@@ -507,22 +507,22 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
             <CardContent className="space-y-3 text-sm">
               <div>
                 <p className="text-gray-600">Order Placed</p>
-                <p className="font-medium">{formatDate(order.createdAt)}</p>
+                <p className="font-medium text-gray-900">{formatDate(order.createdAt)}</p>
               </div>
               <div>
                 <p className="text-gray-600">Due Date</p>
-                <p className="font-medium">{formatDate(order.dueDate)}</p>
+                <p className="font-medium text-gray-900">{formatDate(order.dueDate)}</p>
               </div>
               {order.deliveredAt && (
                 <div>
                   <p className="text-gray-600">Delivered</p>
-                  <p className="font-medium">{formatDate(order.deliveredAt)}</p>
+                  <p className="font-medium text-gray-900">{formatDate(order.deliveredAt)}</p>
                 </div>
               )}
               {order.completedAt && (
                 <div>
                   <p className="text-gray-600">Completed</p>
-                  <p className="font-medium">{formatDate(order.completedAt)}</p>
+                  <p className="font-medium text-gray-900">{formatDate(order.completedAt)}</p>
                 </div>
               )}
               <div>
@@ -533,7 +533,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
           </Card>
 
           {/* Other User Info */}
-          <Card>
+          <Card className="bg-white border-0 shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
@@ -549,11 +549,11 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-semibold">{otherUser.name || otherUser.username || 'Unknown'}</p>
+                  <p className="font-semibold text-gray-900">{otherUser.name || otherUser.username || 'Unknown'}</p>
                   {!isSeller && (
                     <div className="flex items-center gap-1 text-sm">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span>{order.seller.rating.toFixed(1)}</span>
+                      <span className="text-gray-900">{order.seller.rating.toFixed(1)}</span>
                       <span className="text-gray-600">({order.seller.reviewCount} reviews)</span>
                     </div>
                   )}

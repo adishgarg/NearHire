@@ -387,6 +387,13 @@ export function Header() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-gray-200" />
                     <DropdownMenuItem 
+                      className="text-amber-600 hover:bg-amber-50 focus:bg-amber-50 cursor-pointer font-medium"
+                      onClick={() => router.push('/subscription')}
+                    >
+                      Manage Subscription
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-gray-200" />
+                    <DropdownMenuItem 
                       className="text-gray-600 hover:bg-gray-50 focus:bg-gray-50 cursor-pointer"
                       onClick={() => router.push('/settings')}
                     >

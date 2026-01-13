@@ -5,6 +5,7 @@ import { CategoryCard } from "@/components/CategoryCard";
 import { GigCard } from "@/components/GigCard";
 import { Footer } from "@/components/Footer";
 import MagicBento from "@/components/MagicBento";
+import TiltedCard from "@/components/TiltedCard";
 import { categories, featuredGigs } from "@/data/mockData";
 import { TrendingUp, Zap, Award } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,7 @@ export default function Home() {
       {/* Trusted By Section */}
 
       {/* Categories Section */}
-      <section id="categories" className="border-b border-gray-200 py-20 px-4 bg-[#f5ecdf]">
+      <section id="categories" className="py-20 bg-[#f5ecdf]">
         <div className="container mx-auto">
           <div className="mb-12">
             <h2 className="font-serif text-4xl font-semibold text-gray-900 mb-2 text-center">
@@ -29,16 +30,72 @@ export default function Home() {
             </h2>
             <p className="text-gray-600 text-center">Find the perfect service for your needs</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {categories.map((category) => (
-              <CategoryCard key={category.id} category={category} />
-            ))}
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4 sm:gap-6 justify-items-center">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => router.push('/marketplace')}
+                  className="w-full max-w-[300px]"
+                  aria-label={`Open ${category.name} in marketplace`}
+                >
+                  <TiltedCard
+                    imageSrc={category.image}
+                    altText={category.name}
+                    captionText={`${category.gigCount} active gigs`}
+                    containerHeight="320px"
+                    containerWidth="100%"
+                    imageHeight="320px"
+                    imageWidth="100%"
+                    rotateAmplitude={12}
+                    scaleOnHover={1.14}
+                    showMobileWarning={false}
+                    showTooltip={true}
+                    displayOverlayContent={true}
+                    overlayContent={
+                      <p className="text-white text-center text-base font-semibold">
+                        {category.name}
+                      </p>
+                    }
+                  />
+                </button>
+              ))}
+
+              {/* Extra option card */}
+              <button
+                type="button"
+                onClick={() => router.push('/marketplace')}
+                className="w-full max-w-[300px]"
+                aria-label="Explore marketplace"
+              >
+                <TiltedCard
+                  imageSrc={"https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"}
+                  altText={"Explore Marketplace"}
+                  captionText={`Browse marketplace`}
+                  containerHeight="320px"
+                  containerWidth="100%"
+                  imageHeight="320px"
+                  imageWidth="100%"
+                  rotateAmplitude={10}
+                  scaleOnHover={1.14}
+                  showMobileWarning={false}
+                  showTooltip={true}
+                  displayOverlayContent={true}
+                  overlayContent={
+                    <p className="text-white text-center text-base font-semibold">
+                      Explore Marketplace
+                    </p>
+                  }
+                />
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Trending Gigs Section */}
-      <section className="border-b border-gray-200 py-20 px-4 bg-[#e6ddcf]">
+      <section className="py-20 px-4 bg-[#e6ddcf]">
         <div className="container mx-auto">
           <div className="mb-12">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -56,7 +113,7 @@ export default function Home() {
       </section>
 
       {/* Top Rated Services Section */}
-      {/* <section id="explore" className="border-b border-gray-200 py-20 px-4 bg-[#f5ecdf]">
+      {/* <section id="explore" className="py-20 px-4 bg-[#f5ecdf]">
         <div className="container mx-auto">
           <div className="mb-12">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -74,7 +131,7 @@ export default function Home() {
       </section> */}
 
       {/* Why Choose NearHire Section - Bento Grid */}
-      <section className="border-b border-gray-200 py-20 px-4 bg-[#f5ecdf]">
+      <section className="py-20 px-4 bg-[#f5ecdf]">
         <div className="container mx-auto">
           <div className="mb-16 text-center">
             <h2 className="font-serif text-4xl font-semibold text-gray-900 mb-4">

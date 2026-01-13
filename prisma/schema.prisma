@@ -108,8 +108,28 @@ model User {
   conversations   ConversationParticipant[]
   notifications   Notification[]
   transactions    Transaction[]
+  subscription    Subscription?
 
   @@map("users")
+}
+
+model Subscription {
+  id              String    @id @default(cuid())
+  userId          String    @unique @map("user_id")
+  plan            String    @default("BASIC") // BASIC, PROFESSIONAL, PREMIUM
+  status          String    @default("ACTIVE") // ACTIVE, INACTIVE, EXPIRED, CANCELLED
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime  @map("end_date")
+  price           Decimal   @db.Decimal(10, 2)
+  paymentId       String?   @map("payment_id")
+  orderId         String?   @map("order_id")
+  isAutoRenew     Boolean   @default(true) @map("is_auto_renew")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("subscriptions")
 }
 
 model VerificationToken {
@@ -393,4 +413,17 @@ enum NotificationType {
   REVIEW
   PAYMENT
   SYSTEM
+}
+
+enum SubscriptionPlan {
+  BASIC
+  PROFESSIONAL
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  CANCELLED
 }

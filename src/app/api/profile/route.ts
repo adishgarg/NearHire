@@ -129,6 +129,7 @@ export async function PATCH(request: NextRequest) {
     const {
       name,
       username,
+      image,
       bio,
       location,
       website,
@@ -165,6 +166,7 @@ export async function PATCH(request: NextRequest) {
 
     if (name !== undefined) updateData.name = name
     if (username !== undefined) updateData.username = username
+    if (image !== undefined) updateData.image = image
     if (bio !== undefined) updateData.bio = bio
     if (location !== undefined) updateData.location = location
     if (website !== undefined) updateData.website = website

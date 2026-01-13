@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
+import { isSellerSubscriptionActive } from '@/lib/subscription';
 
 const prisma = new PrismaClient();
 
@@ -27,8 +28,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For now, allow any authenticated user to create gigs
-    // TODO: Implement proper role checking once onboarding is complete
+    // Check if user is a seller
+    if (user.role !== 'SELLER' && user.role !== 'BOTH') {
+      return NextResponse.json(
+        { error: 'Only sellers can create gigs' },
+        { status: 403 }
+      );
+    }
+
+    // Check if seller has active subscription
+    const hasActiveSubscription = await isSellerSubscriptionActive(user.id);
+    if (!hasActiveSubscription) {
+      return NextResponse.json(
+        { error: 'Active subscription required to create gigs. Please subscribe to continue.' },
+        { status: 403 }
+      );
+    }
 
     const body = await request.json();
     

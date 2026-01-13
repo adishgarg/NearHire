@@ -3033,12 +3033,12 @@ form-data@^4.0.4:
     hasown "^2.0.2"
     mime-types "^2.1.12"
 
-framer-motion@^12.25.0:
-  version "12.25.0"
-  resolved "https://registry.npmjs.org/framer-motion/-/framer-motion-12.25.0.tgz"
-  integrity sha512-mlWqd0rApIjeyhTCSNCqPYsUAEhkcUukZxH3ke6KbstBRPcxhEpuIjmiUQvB+1E9xkEm5SpNHBgHCapH/QHTWg==
+framer-motion@^12.25.0, framer-motion@^12.26.2:
+  version "12.26.2"
+  resolved "https://registry.npmjs.org/framer-motion/-/framer-motion-12.26.2.tgz"
+  integrity sha512-lflOQEdjquUi9sCg5Y1LrsZDlsjrHw7m0T9Yedvnk7Bnhqfkc89/Uha10J3CFhkL+TCZVCRw9eUGyM/lyYhXQA==
   dependencies:
-    motion-dom "^12.24.11"
+    motion-dom "^12.26.2"
     motion-utils "^12.24.10"
     tslib "^2.4.0"
 
@@ -3732,10 +3732,10 @@ minimist@^1.2.0, minimist@^1.2.6:
   resolved "https://registry.npmjs.org/minimist/-/minimist-1.2.8.tgz"
   integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
 
-motion-dom@^12.24.11:
-  version "12.24.11"
-  resolved "https://registry.npmjs.org/motion-dom/-/motion-dom-12.24.11.tgz"
-  integrity sha512-DlWOmsXMJrV8lzZyd+LKjG2CXULUs++bkq8GZ2Sr0R0RRhs30K2wtY+LKiTjhmJU3W61HK+rB0GLz6XmPvTA1A==
+motion-dom@^12.26.2:
+  version "12.26.2"
+  resolved "https://registry.npmjs.org/motion-dom/-/motion-dom-12.26.2.tgz"
+  integrity sha512-KLMT1BroY8oKNeliA3JMNJ+nbCIsTKg6hJpDb4jtRAJ7nCKnnpg/LTq/NGqG90Limitz3kdAnAVXecdFVGlWTw==
   dependencies:
     motion-utils "^12.24.10"
 
@@ -3743,6 +3743,14 @@ motion-utils@^12.24.10:
   version "12.24.10"
   resolved "https://registry.npmjs.org/motion-utils/-/motion-utils-12.24.10.tgz"
   integrity sha512-x5TFgkCIP4pPsRLpKoI86jv/q8t8FQOiM/0E8QKBzfMozWHfkKap2gA1hOki+B5g3IsBNpxbUnfOum1+dgvYww==
+
+motion@^12.26.2:
+  version "12.26.2"
+  resolved "https://registry.npmjs.org/motion/-/motion-12.26.2.tgz"
+  integrity sha512-2Q6g0zK1gUJKhGT742DAe42LgietcdiJ3L3OcYAHCQaC1UkLnn6aC8S/obe4CxYTLAgid2asS1QdQ/blYfo5dw==
+  dependencies:
+    framer-motion "^12.26.2"
+    tslib "^2.4.0"
 
 ms@^2.1.1, ms@^2.1.3:
   version "2.1.3"

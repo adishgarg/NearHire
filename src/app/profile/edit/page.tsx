@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -73,6 +73,9 @@ export default function EditProfilePage() {
 
   const [skillsArray, setSkillsArray] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -145,6 +148,98 @@ export default function EditProfilePage() {
     setSkillsArray(prev => prev.filter(s => s !== skill));
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    setError('');
+    
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('file', file);
+      formDataToSend.append('folder', 'profiles');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const imageUrl = data.data?.url;
+        if (imageUrl) {
+          setFormData(prev => ({ ...prev, image: imageUrl }));
+        } else {
+          console.error('Upload response:', data);
+          setError('No image URL received from server');
+        }
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to upload image');
+      }
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      setError('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setDetectingLocation(true);
+    setError('');
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          
+          // Try to get city name from coordinates using reverse geocoding
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+            if (response.ok) {
+              const data = await response.json();
+              const city = data.address?.city || data.address?.town || data.address?.village;
+              const country = data.address?.country;
+              const location = city && country ? `${city}, ${country}` : `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+              setFormData(prev => ({ ...prev, location }));
+            } else {
+              // Fallback to coordinates if reverse geocoding fails
+              setFormData(prev => ({ ...prev, location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` }));
+            }
+          } catch (err) {
+            // Fallback to coordinates if API call fails
+            setFormData(prev => ({ ...prev, location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` }));
+          }
+        } catch (err) {
+          console.error('Error processing location:', err);
+          setError('Failed to process location');
+        } finally {
+          setDetectingLocation(false);
+        }
+      },
+      (error) => {
+        setDetectingLocation(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          setError('Location permission denied. Please enable location access in your browser settings.');
+        } else if (error.code === error.TIMEOUT) {
+          setError('Location request timed out. Please try again.');
+        } else {
+          setError('Failed to detect location. Please ensure location services are enabled.');
+        }
+      },
+      { timeout: 10000 }
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -155,6 +250,7 @@ export default function EditProfilePage() {
       const updateData = {
         name: formData.name,
         username: formData.username,
+        image: formData.image,
         bio: formData.bio,
         location: formData.location,
         website: formData.website,
@@ -241,26 +337,46 @@ export default function EditProfilePage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Profile Picture */}
-              <div className="flex items-center gap-6">
-                <Avatar className="h-24 w-24 border-4 border-gray-200">
+              <div className="flex items-start gap-6">
+                <Avatar className="h-24 w-24 border-4 border-gray-200 flex-shrink-0">
                   <AvatarImage src={formData.image || ''} alt={formData.name || 'User'} />
                   <AvatarFallback className="text-2xl bg-gray-100 text-gray-900">
                     {(formData.name || 'U')[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <Label htmlFor="image">Profile Picture URL</Label>
+                  <Label htmlFor="image-upload" className="block mb-3">
+                    Profile Picture
+                  </Label>
+                  <div className="flex gap-2 items-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingImage}
+                      className="border-gray-300 hover:bg-gray-50"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploadingImage ? 'Uploading...' : 'Choose File'}
+                    </Button>
+                    {formData.image && (
+                      <span className="text-sm text-gray-600">
+                        Image selected
+                      </span>
+                    )}
+                  </div>
                   <Input
-                    id="image"
-                    name="image"
-                    type="url"
-                    value={formData.image || ''}
-                    onChange={handleInputChange}
-                    placeholder="https://example.com/avatar.jpg"
-                    className="mt-2"
+                    ref={fileInputRef}
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImage}
+                    className="hidden"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Enter the URL of your profile picture
+                  <p className="text-xs text-gray-500 mt-2">
+                    Supported formats: JPG, PNG, GIF, WebP. Max size: 10MB
                   </p>
                 </div>
               </div>
@@ -366,14 +482,27 @@ export default function EditProfilePage() {
                   <MapPin className="w-4 h-4" />
                   Location
                 </Label>
-                <Input
-                  id="location"
-                  name="location"
-                  value={formData.location || ''}
-                  onChange={handleInputChange}
-                  placeholder="New York, NY"
-                  className="mt-2"
-                />
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="location"
+                    name="location"
+                    value={formData.location || ''}
+                    onChange={handleInputChange}
+                    placeholder="New York, NY"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDetectLocation}
+                    disabled={detectingLocation}
+                    className="border-gray-300 hover:bg-gray-50 whitespace-nowrap"
+                  >
+                    <MapPin className="w-4 h-4 mr-2" />
+                    {detectingLocation ? 'Detecting...' : 'Detect'}
+                  </Button>
+                </div>
               </div>
 
               <div>

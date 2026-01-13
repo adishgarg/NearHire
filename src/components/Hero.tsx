@@ -63,7 +63,7 @@ export function Hero({ onSearch }: HeroProps) {
   };
 
   return (
-    <section className="text-center mb-10">
+    <section className="text-center">
       <div className="text-xs uppercase tracking-[0.14em] text-gray-500 mb-2">
         FREELANCE TALENT MARKETPLACE
       </div>
@@ -98,7 +98,7 @@ export function Hero({ onSearch }: HeroProps) {
         </div>
       </form>
 
-      <div className="flex justify-center gap-3 mb-8">
+      <div className="flex justify-center gap-3 ">
         <Button 
           onClick={() => router.push('/marketplace')}
           variant="outline"
@@ -106,51 +106,6 @@ export function Hero({ onSearch }: HeroProps) {
         >
           Browse all services
         </Button>
-      </div>
-
-      {/* Freelancer Strip */}
-      <div className="flex gap-4 overflow-hidden px-5 mb-7">
-        {freelancers.map((freelancer, idx) => (
-          <article 
-            key={idx}
-            className={`flex-1 min-w-0 bg-gradient-to-br ${freelancer.gradient} rounded-[28px] h-[180px] relative overflow-hidden flex items-end justify-center cursor-pointer hover:scale-105 transition-transform`}
-            onClick={() => router.push('/marketplace')}
-          >
-            <Image
-              src={freelancer.image}
-              alt={freelancer.name}
-              fill
-              className="object-cover opacity-95"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
-            <div className="absolute bottom-3 left-4 right-4 text-white z-10">
-              <div className="text-xs font-semibold mb-0.5">{freelancer.name}</div>
-              <div className="text-[11px] opacity-80">{freelancer.role}</div>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {/* Mini Features */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-7 text-sm">
-        <div>
-          <div className="font-semibold mb-1.5">Verified Talent Only</div>
-          <p className="text-gray-600 text-xs leading-relaxed">
-            Every freelancer is screened for skills, communication, and reliability before joining NearHire.
-          </p>
-        </div>
-        <div>
-          <div className="font-semibold mb-1.5">Smart Matching</div>
-          <p className="text-gray-600 text-xs leading-relaxed">
-            Share your brief and we instantly shortlist the top 3 profiles that fit your budget and timeline.
-          </p>
-        </div>
-        <div>
-          <div className="font-semibold mb-1.5">Protected Payments</div>
-          <p className="text-gray-600 text-xs leading-relaxed">
-            Escrow-based milestones ensure you only pay when work is delivered and approved.
-          </p>
-        </div>
       </div>
     </section>
   );

@@ -28,6 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
+      </head>
       <body
         className={`${inter.variable} ${playfair.variable} antialiased bg-[#e6ddcf] text-gray-900 min-h-screen font-sans`}
         suppressHydrationWarning={true}

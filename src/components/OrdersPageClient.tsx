@@ -97,7 +97,7 @@ export function OrdersPageClient({ buyerOrders, sellerOrders }: OrdersPageClient
     const imageUrl = order.gig.images[0] || '/placeholder.png';
     
     return (
-      <Card key={order.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+      <Card key={order.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white border-0">
         <div className="md:flex">
           {/* Gig Image */}
           <div className="md:w-48 h-48 md:h-auto relative flex-shrink-0">
@@ -112,7 +112,7 @@ export function OrdersPageClient({ buyerOrders, sellerOrders }: OrdersPageClient
           <div className="flex-1 p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold mb-2 line-clamp-1">
+                <h3 className="text-lg font-semibold mb-2 line-clamp-1 text-gray-900">
                   {order.gig.title}
                 </h3>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -141,7 +141,7 @@ export function OrdersPageClient({ buyerOrders, sellerOrders }: OrdersPageClient
               <div className="mb-4">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-600">Progress</span>
-                  <span className="font-medium">{order.progress}%</span>
+                  <span className="font-medium text-gray-900">{order.progress}%</span>
                 </div>
                 <Progress value={order.progress} className="h-2" />
               </div>
@@ -151,19 +151,19 @@ export function OrdersPageClient({ buyerOrders, sellerOrders }: OrdersPageClient
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
               <div>
                 <p className="text-gray-600">Price</p>
-                <p className="font-semibold">${Number(order.price).toFixed(2)}</p>
+                <p className="font-semibold text-gray-900">${Number(order.price).toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-gray-600">Order Date</p>
-                <p className="font-medium">{formatDate(order.createdAt)}</p>
+                <p className="font-medium text-gray-900">{formatDate(order.createdAt)}</p>
               </div>
               <div>
                 <p className="text-gray-600">Due Date</p>
-                <p className="font-medium">{formatDate(order.dueDate)}</p>
+                <p className="font-medium text-gray-900">{formatDate(order.dueDate)}</p>
               </div>
               <div>
                 <p className="text-gray-600">Delivery Time</p>
-                <p className="font-medium">{order.gig.deliveryTime} days</p>
+                <p className="font-medium text-gray-900">{order.gig.deliveryTime} days</p>
               </div>
             </div>
 
@@ -199,7 +199,7 @@ export function OrdersPageClient({ buyerOrders, sellerOrders }: OrdersPageClient
               {order.conversation && (
                 <Button
                   variant="outline"
-                  className="gap-2"
+                  className="gap-2 border-0"
                   onClick={() => router.push(`/messages?conversationId=${order.conversation?.id}`)}
                 >
                   <MessageSquare className="w-4 h-4" />
@@ -225,7 +225,7 @@ export function OrdersPageClient({ buyerOrders, sellerOrders }: OrdersPageClient
             </div>
 
             {/* Footer Info */}
-            <div className="mt-4 pt-4 border-t text-xs text-gray-500">
+            <div className="mt-4 pt-4 text-xs text-gray-500">
               <p>Order ID: {order.id}</p>
               <p>Last updated: {formatTimeAgo(order.updatedAt)}</p>
             </div>
@@ -237,10 +237,10 @@ export function OrdersPageClient({ buyerOrders, sellerOrders }: OrdersPageClient
 
   const renderEmptyState = (isSelling: boolean) => (
     <div className="text-center py-16">
-      <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <Package className="w-12 h-12 text-gray-400" />
+      <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Package className="w-12 h-12 text-amber-600" />
       </div>
-      <h3 className="text-xl font-semibold mb-2">No orders yet</h3>
+      <h3 className="text-xl font-semibold mb-2 text-gray-900">No orders yet</h3>
       <p className="text-gray-600 mb-6">
         {isSelling 
           ? "You haven't received any orders yet. Keep promoting your services!"
@@ -263,7 +263,7 @@ export function OrdersPageClient({ buyerOrders, sellerOrders }: OrdersPageClient
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">My Orders</h1>
+        <h1 className="text-3xl font-bold mb-2 text-gray-900">My Orders</h1>
         <p className="text-gray-600">Manage your orders and track their progress</p>
       </div>
 

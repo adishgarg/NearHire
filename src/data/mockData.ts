@@ -86,7 +86,7 @@ export const categories: Category[] = [
     id: '5',
     name: 'Digital Marketing',
     icon: 'TrendingUp',
-    image: 'https://images.unsplash.com/photo-1557838923-2985c318be48?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkaWdpdGFsJTIwbWFya2V0aW5nfGVufDF8fHx8MTc2MzI5MjM5N3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    image: 'https://certiprof.com/cdn/shop/articles/DIGITAL_MARKETING_BY_CERTIPROF.webp?v=1742398487&width=1312',
     gigCount: 892,
   },
   {
