@@ -10,7 +10,7 @@ import { Send, Paperclip, MoreVertical, Search, Loader2 } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { useSession } from 'next-auth/react';
 import { formatDistanceToNow } from 'date-fns';
-import { io, Socket } from 'socket.io-client';
+// Ably will be dynamically imported below. We no longer use Socket.IO on the client.
 
 interface Message {
   id: string;
@@ -56,94 +56,68 @@ export function MessagesPage() {
   const [isConnected, setIsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const socketRef = useRef<Socket | null>(null);
+  const ablyClientRef = useRef<any>(null);
+  const convChannelRef = useRef<any>(null);
+  const userChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize Socket.IO connection
+  // Initialize Ably Realtime connection (client-side)
   useEffect(() => {
+    let mounted = true;
     if (!session?.user?.id) return;
 
-    const socket = io({
-      path: '/api/socketio',
-      auth: {
-        userId: session.user.id,
-      },
-    });
+    async function initAbly() {
+      const key = process.env.NEXT_PUBLIC_ABLY_KEY;
 
-    socket.on('connect', () => {
-      console.log('✅ Socket connected');
-      setIsConnected(true);
-    });
+      // If no client key provided, keep isConnected=true so UI can POST messages to API route.
+      if (!key) {
+        setIsConnected(true);
+        return;
+      }
 
-    socket.on('disconnect', () => {
-      console.log('❌ Socket disconnected');
-      setIsConnected(false);
-    });
+      try {
+        const ablyModule = await import('ably');
+        const Ably = (ablyModule as any).Realtime || (ablyModule as any).default?.Realtime || ablyModule;
+        const client = new (ablyModule as any).Realtime({ key });
+        ablyClientRef.current = client;
 
-    // Listen for new messages
-    socket.on('message:new', (message: any) => {
-      console.log('📨 Received new message:', message);
-      
-      // Add message to the list with isOwn flag
-      setMessages((prev) => {
-        // Avoid duplicates (in case optimistic update already added it)
-        const exists = prev.some(m => m.id === message.id);
-        if (exists) {
-          console.log('⚠️ Message already exists, skipping');
-          return prev;
-        }
-        
-        console.log('✅ Adding message to UI');
-        return [...prev, { 
-          ...message, 
-          isOwn: message.senderId === session.user?.id 
-        }];
-      });
-      
-      // Update conversation list with latest message
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === message.conversationId
-            ? { ...conv, lastMessage: message.content, timestamp: new Date() }
-            : conv
-        )
-      );
-    });
+        client.connection.on('connected', () => {
+          if (!mounted) return;
+          console.log('✅ Ably connected');
+          setIsConnected(true);
+        });
 
-    // Listen for typing indicators
-    socket.on('typing:start', ({ userId }: { userId: string }) => {
-      setTypingUsers((prev) => new Set(prev).add(userId));
-    });
+        client.connection.on('failed', (err: any) => {
+          console.warn('Ably connection failed', err);
+          setIsConnected(false);
+        });
 
-    socket.on('typing:stop', ({ userId }: { userId: string }) => {
-      setTypingUsers((prev) => {
-        const next = new Set(prev);
-        next.delete(userId);
-        return next;
-      });
-    });
+        // Subscribe to direct user channel for notifications
+        if (!session?.user?.id) return;
+        const userCh = client.channels.get(`user:${session.user.id}`);
+        userChannelRef.current = userCh;
+        userCh.subscribe('notification:new-message', (msg: any) => {
+          const message = msg.data;
+          // If currently viewing the conversation, it'll arrive via conversation channel; otherwise update conv list
+          setConversations((prev) =>
+            prev.map((conv) =>
+              conv.id === message.conversationId ? { ...conv, lastMessage: message.content, timestamp: new Date(), unread: (conv.unread || 0) + 1 } : conv
+            )
+          );
+        });
+      } catch (err) {
+        console.warn('Ably init failed', err);
+        setIsConnected(true); // allow API POST fallback
+      }
+    }
 
-    // Listen for online/offline status
-    socket.on('user:online', ({ userId }: { userId: string }) => {
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.user.id === userId ? { ...conv, user: { ...conv.user, online: true } } : conv
-        )
-      );
-    });
-
-    socket.on('user:offline', ({ userId }: { userId: string }) => {
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.user.id === userId ? { ...conv, user: { ...conv.user, online: false } } : conv
-        )
-      );
-    });
-
-    socketRef.current = socket;
+    initAbly();
 
     return () => {
-      socket.disconnect();
+      mounted = false;
+      try {
+        ablyClientRef.current?.close();
+      } catch (e) {}
     };
   }, [session?.user?.id]);
 
@@ -152,24 +126,68 @@ export function MessagesPage() {
     fetchConversations();
   }, []);
 
-  // Fetch messages and join conversation room
+  // Fetch messages and subscribe to Ably conversation channel
   useEffect(() => {
-    if (selectedConversation && socketRef.current) {
-      console.log('🔄 Loading conversation:', selectedConversation);
+    let mounted = true;
+
+    async function subscribeConv() {
+      if (!selectedConversation) return;
+
+      // Load current messages
       fetchMessages(selectedConversation);
       markAsRead(selectedConversation);
-      
-      console.log('📥 Joining conversation room:', selectedConversation);
-      socketRef.current.emit('conversation:join', selectedConversation);
 
-      return () => {
-        if (socketRef.current) {
-          console.log('📤 Leaving conversation room:', selectedConversation);
-          socketRef.current.emit('conversation:leave', selectedConversation);
-        }
-      };
+      const client = ablyClientRef.current;
+      if (!client) return;
+
+      // Unsubscribe existing conv channel
+      try {
+        convChannelRef.current?.unsubscribe();
+      } catch (e) {}
+
+      const channel = client.channels.get(`conversation:${selectedConversation}`);
+      convChannelRef.current = channel;
+
+      channel.subscribe('message:new', (msg: any) => {
+        const message = msg.data;
+        if (!mounted) return;
+        setMessages((prev) => {
+          const exists = prev.some((m) => m.id === message.id);
+          if (exists) return prev;
+          return [...prev, { ...message, isOwn: message.senderId === session?.user?.id }];
+        });
+
+        setConversations((prev) =>
+          prev.map((conv) => (conv.id === message.conversationId ? { ...conv, lastMessage: message.content, timestamp: new Date() } : conv))
+        );
+      });
+
+      channel.subscribe('typing:start', (msg: any) => {
+        const { userId } = msg.data || {};
+        if (!userId) return;
+        setTypingUsers((prev) => new Set(prev).add(userId));
+      });
+
+      channel.subscribe('typing:stop', (msg: any) => {
+        const { userId } = msg.data || {};
+        if (!userId) return;
+        setTypingUsers((prev) => {
+          const next = new Set(prev);
+          next.delete(userId);
+          return next;
+        });
+      });
     }
-  }, [selectedConversation]);
+
+    subscribeConv();
+
+    return () => {
+      mounted = false;
+      try {
+        convChannelRef.current?.unsubscribe();
+      } catch (e) {}
+    };
+  }, [selectedConversation, session?.user?.id]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -233,7 +251,7 @@ export function MessagesPage() {
   };
 
   const handleSendMessage = async () => {
-    if (!messageText.trim() || !selectedConversation || !session?.user || !socketRef.current) return;
+    if (!messageText.trim() || !selectedConversation || !session?.user) return;
 
     const selectedConv = conversations.find((c) => c.id === selectedConversation);
     if (!selectedConv) return;
@@ -259,44 +277,26 @@ export function MessagesPage() {
         timestamp: new Date(),
       };
 
-      console.log('➕ Adding optimistic message to UI:', optimisticMessage);
-      setMessages((prev) => {
-        const updated = [...prev, optimisticMessage];
-        console.log('📊 Messages after optimistic add:', updated.length);
-        return updated;
-      });
+      setMessages((prev) => [...prev, optimisticMessage]);
 
-      // Update conversation list
+      // Update conversation list locally
       setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === selectedConversation
-            ? { ...conv, lastMessage: messageContent, timestamp: new Date() }
-            : conv
-        )
+        prev.map((conv) => (conv.id === selectedConversation ? { ...conv, lastMessage: messageContent, timestamp: new Date() } : conv))
       );
 
-      console.log('📤 Sending message via Socket.IO:', {
-        conversationId: selectedConversation,
-        content: messageContent,
-        receiverId: selectedConv.user.id,
+      // POST to server route which will save and publish via Ably server-side helper
+      await fetch('/api/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversationId: selectedConversation, receiverId: selectedConv.user.id, content: messageContent }),
       });
 
-      // Send via Socket.IO
-      socketRef.current.emit('message:send', {
-        conversationId: selectedConversation,
-        content: messageContent,
-        receiverId: selectedConv.user.id,
-        tempId, // Send temp ID so we can replace it
-      });
-      
-      // Stop typing indicator
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      socketRef.current.emit('typing:stop', {
-        conversationId: selectedConversation,
-        userId: session.user.id,
-      });
+      // Stop typing indicator (publish stop via Ably if available)
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      try {
+        const client = ablyClientRef.current;
+        client?.channels.get(`conversation:${selectedConversation}`)?.publish('typing:stop', { userId: session.user.id });
+      } catch (e) {}
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
@@ -305,27 +305,19 @@ export function MessagesPage() {
   };
 
   const handleTyping = () => {
-    if (!socketRef.current || !selectedConversation || !session?.user?.id) return;
+    if (!selectedConversation || !session?.user?.id) return;
 
-    // Send typing start
-    socketRef.current.emit('typing:start', {
-      conversationId: selectedConversation,
-      userId: session.user.id,
-    });
+    try {
+      const client = ablyClientRef.current;
+      client?.channels.get(`conversation:${selectedConversation}`)?.publish('typing:start', { userId: session.user.id });
+    } catch (e) {}
 
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Set timeout to send typing stop after 2 seconds
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
-      if (socketRef.current) {
-        socketRef.current.emit('typing:stop', {
-          conversationId: selectedConversation,
-          userId: session.user?.id,
-        });
-      }
+      try {
+        const client = ablyClientRef.current;
+        client?.channels.get(`conversation:${selectedConversation}`)?.publish('typing:stop', { userId: session.user?.id });
+      } catch (e) {}
     }, 2000);
   };
 

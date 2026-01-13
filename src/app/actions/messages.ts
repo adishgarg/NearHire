@@ -3,6 +3,7 @@
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { publishToAbly } from '@/lib/ably';
 
 export async function sendMessage(
   conversationId: string,
@@ -42,6 +43,30 @@ export async function sendMessage(
       attachments,
     },
   });
+
+  // Publish to Ably (optional) so real-time clients can receive the message when migrated.
+  try {
+    const formatted = {
+      id: message.id,
+      conversationId: message.conversationId,
+      senderId: message.senderId,
+      senderName: session.user.name,
+      senderAvatar: session.user.image || null,
+      content: message.content,
+      messageType: message.messageType,
+      attachments: message.attachments,
+      isRead: message.isRead,
+      timestamp: message.createdAt,
+    };
+
+    // Channel for conversation
+    await publishToAbly(`conversation:${conversationId}`, 'message:new', formatted);
+
+    // Notify receiver directly
+    await publishToAbly(`user:${receiverId}`, 'notification:new-message', formatted);
+  } catch (err) {
+    // ignore publish errors — publishing is best-effort
+  }
 
   // Update conversation
   await prisma.conversation.update({
