@@ -37,17 +37,17 @@ export default function Home() {
                   key={category.id}
                   type="button"
                   onClick={() => router.push('/marketplace')}
-                  className="w-full max-w-[300px]"
+                  className="w-full max-w-[280px]"
                   aria-label={`Open ${category.name} in marketplace`}
                 >
                   <TiltedCard
                     imageSrc={category.image}
                     altText={category.name}
-                    captionText={`${category.gigCount} active gigs`}
-                    containerHeight="320px"
-                    containerWidth="100%"
-                    imageHeight="320px"
-                    imageWidth="100%"
+                      captionText={`${category.gigCount} active gigs`}
+                      containerHeight="300px"
+                      containerWidth="100%"
+                      imageHeight="300px"
+                      imageWidth="100%"
                     rotateAmplitude={12}
                     scaleOnHover={1.14}
                     showMobileWarning={false}
@@ -66,16 +66,16 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => router.push('/marketplace')}
-                className="w-full max-w-[300px]"
+                className="w-full max-w-[280px]"
                 aria-label="Explore marketplace"
               >
                 <TiltedCard
                   imageSrc={"https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"}
                   altText={"Explore Marketplace"}
                   captionText={`Browse marketplace`}
-                  containerHeight="320px"
+                  containerHeight="300px"
                   containerWidth="100%"
-                  imageHeight="320px"
+                  imageHeight="300px"
                   imageWidth="100%"
                   rotateAmplitude={10}
                   scaleOnHover={1.14}
@@ -94,20 +94,29 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trending Gigs Section */}
-      <section className="py-20 px-4 bg-[#e6ddcf]">
-        <div className="container mx-auto">
-          <div className="mb-12">
+      {/* Trending Gigs Section - Continuous Carousel */}
+      <section className="py-20 bg-[#e6ddcf] overflow-hidden">
+        <div className="w-full">
+          <div className="mb-12 container mx-auto px-4">
             <div className="flex items-center justify-center gap-2 mb-2">
               <TrendingUp className="h-6 w-6 text-gray-900" />
-              <h2 className="font-serif text-4xl font-semibold text-gray-900">Trending Gigs</h2>
+              <h2 className="font-serif text-4xl font-semibold text-gray-900">
+                Trending Gigs
+              </h2>
             </div>
-            <p className="text-gray-600 text-center">Most popular services this week</p>
+            <p className="text-gray-600 text-center">
+              Most popular services this week
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredGigs.slice(0, 4).map((gig) => (
-              <GigCard key={gig.id} gig={gig} />
-            ))}
+
+          <div className="relative overflow-hidden">
+            <div className="flex gap-6 animate-carousel hover:pause-carousel">
+              {[...featuredGigs.slice(0, 4), ...featuredGigs.slice(0, 4)].map((gig, index) => (
+                <div key={`${gig.id}-${index}`} className="min-w-[280px] max-w-[280px] pointer-events-auto">
+                  <GigCard gig={gig} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -155,6 +164,26 @@ export default function Home() {
       </section>
 
       <Footer />
+      <style jsx global>{`
+        @keyframes carousel-scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+
+        .animate-carousel {
+          display: flex;
+          width: max-content;
+          animation: carousel-scroll 25s linear infinite;
+        }
+
+        .animate-carousel:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </div>
   );
 }
