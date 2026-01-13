@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { publishToAbly } from '@/lib/ably';
 
 export async function POST(request: Request) {
   try {
@@ -89,6 +90,15 @@ export async function POST(request: Request) {
       isOwn: true,
       timestamp: message.createdAt,
     };
+
+    // Best-effort: publish the new message and a typing:stop to Ably so receivers get the update
+    try {
+      await publishToAbly(`conversation:${conversationId}`, 'message:new', formattedMessage);
+      await publishToAbly(`user:${receiverId}`, 'notification:new-message', formattedMessage);
+      await publishToAbly(`conversation:${conversationId}`, 'typing:stop', { userId });
+    } catch (err) {
+      console.warn('Ably publish failed in /api/messages/send', err);
+    }
 
     return NextResponse.json(formattedMessage);
   } catch (error) {

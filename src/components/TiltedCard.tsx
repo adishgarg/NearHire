@@ -127,8 +127,8 @@ export default function TiltedCard({
         />
 
         {displayOverlayContent && overlayContent && (
-          <motion.div className="absolute top-3 right-3 z-[2] will-change-transform [transform:translateZ(30px)]">
-            <div className="bg-black/60 px-3 py-1 rounded-md backdrop-blur-sm text-white text-center max-w-[90%]">
+          <motion.div className="absolute top-3 left-3 z-[2] will-change-transform [transform:translateZ(30px)]">
+            <div className="bg-black/60 px-2 py-0.5 rounded-sm backdrop-blur-sm text-white text-left min-w-[140px] max-w-[220px] text-sm">
               {overlayContent}
             </div>
           </motion.div>
