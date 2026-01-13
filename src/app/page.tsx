@@ -40,25 +40,27 @@ export default function Home() {
                   className="w-full max-w-[280px]"
                   aria-label={`Open ${category.name} in marketplace`}
                 >
-                  <TiltedCard
-                    imageSrc={category.image}
-                    altText={category.name}
+                  <div className="grayscale transition-all duration-300">
+                    <TiltedCard
+                      imageSrc={category.image}
+                      altText={category.name}
                       captionText={`${category.gigCount} active gigs`}
                       containerHeight="300px"
                       containerWidth="100%"
                       imageHeight="300px"
                       imageWidth="100%"
-                    rotateAmplitude={12}
-                    scaleOnHover={1.14}
-                    showMobileWarning={false}
-                    showTooltip={true}
-                    displayOverlayContent={true}
-                    overlayContent={
-                      <p className="text-white text-center text-base font-semibold">
-                        {category.name}
-                      </p>
-                    }
-                  />
+                      rotateAmplitude={12}
+                      scaleOnHover={1.14}
+                      showMobileWarning={false}
+                      showTooltip={true}
+                      displayOverlayContent={true}
+                      overlayContent={
+                        <p className="text-white text-center text-base font-semibold">
+                          {category.name}
+                        </p>
+                      }
+                    />
+                  </div>
                 </button>
               ))}
 
@@ -69,25 +71,27 @@ export default function Home() {
                 className="w-full max-w-[280px]"
                 aria-label="Explore marketplace"
               >
-                <TiltedCard
-                  imageSrc={"https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"}
-                  altText={"Explore Marketplace"}
-                  captionText={`Browse marketplace`}
-                  containerHeight="300px"
-                  containerWidth="100%"
-                  imageHeight="300px"
-                  imageWidth="100%"
-                  rotateAmplitude={10}
-                  scaleOnHover={1.14}
-                  showMobileWarning={false}
-                  showTooltip={true}
-                  displayOverlayContent={true}
-                  overlayContent={
-                    <p className="text-white text-center text-base font-semibold">
-                      Explore Marketplace
-                    </p>
-                  }
-                />
+                <div className="grayscale transition-all duration-300">
+                  <TiltedCard
+                    imageSrc={"https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"}
+                    altText={"Explore Marketplace"}
+                    captionText={`Browse marketplace`}
+                    containerHeight="300px"
+                    containerWidth="100%"
+                    imageHeight="300px"
+                    imageWidth="100%"
+                    rotateAmplitude={10}
+                    scaleOnHover={1.14}
+                    showMobileWarning={false}
+                    showTooltip={true}
+                    displayOverlayContent={true}
+                    overlayContent={
+                      <p className="text-white text-center text-base font-semibold">
+                        Explore Marketplace
+                      </p>
+                    }
+                  />
+                </div>
               </button>
             </div>
           </div>
