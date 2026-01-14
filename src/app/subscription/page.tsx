@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Script from 'next/script';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -45,6 +46,7 @@ export default function SubscriptionPage() {
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -94,12 +96,12 @@ export default function SubscriptionPage() {
       const orderData = await orderResponse.json();
 
       // Initialize Razorpay payment
-      if (!window.Razorpay) {
-        throw new Error('Razorpay is not loaded');
+      if (!window.Razorpay || !razorpayLoaded) {
+        throw new Error('Payment system is still loading. Please try again in a moment.');
       }
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: orderData.key,
         order_id: orderData.orderId,
         amount: orderData.amount,
         currency: orderData.currency,
@@ -202,6 +204,11 @@ export default function SubscriptionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5ecdf] via-white to-[#faf8f3] text-gray-900">
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="afterInteractive"
+        onLoad={() => setRazorpayLoaded(true)}
+      />
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-100 to-transparent rounded-full blur-3xl opacity-40"></div>
@@ -299,7 +306,7 @@ export default function SubscriptionPage() {
                 <CardContent className="px-8 py-8 space-y-8">
                   <Button
                     onClick={() => handleSubscribe(plan.name)}
-                    disabled={processingPlan === plan.name || currentPlan === plan.name}
+                    disabled={processingPlan === plan.name || currentPlan === plan.name || !razorpayLoaded}
                     className={`w-full text-lg py-7 rounded-2xl font-bold tracking-wide transition-all duration-300 ${
                       currentPlan === plan.name
                         ? 'bg-gray-100 text-gray-700 border-2 border-gray-300 hover:bg-gray-100'

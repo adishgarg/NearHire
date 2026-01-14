@@ -130,6 +130,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      key: process.env.RAZORPAY_KEY_ID,
       orderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
