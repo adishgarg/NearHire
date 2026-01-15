@@ -33,8 +33,8 @@ export async function middleware(request: NextRequest) {
 
   // If user is already logged in and tries to access login/signup
   if (isAuthPath && session?.user) {
-    const dashboardUrl = new URL("/dashboard", request.url)
-    return NextResponse.redirect(dashboardUrl)
+    const profileUrl = new URL("/profile", request.url)
+    return NextResponse.redirect(profileUrl)
   }
 
   return NextResponse.next()

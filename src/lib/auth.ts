@@ -148,21 +148,21 @@ export const {
         console.log('🚀 SignIn callback - User:', user.email, 'Provider:', account?.provider)
         
         if (!user.email) {
-          console.warn('⚠️ GitHub email missing, allowing OAuth login anyway')
-          return true
+          console.error('❌ No email provided for user, rejecting sign in')
+          return false
         }
 
         // For OAuth providers, create/update user in database
         if (account?.provider === 'google' || account?.provider === 'github') {
-          let prisma
           try {
-            prisma = await getPrismaClient()
+            const prisma = await getPrismaClient()
             
             const dbUser = await prisma.user.upsert({
               where: { email: user.email },
               update: {
                 name: user.name || null,
                 image: user.image || null,
+                emailVerified: new Date(),
               },
               create: {
                 email: user.email,
@@ -175,11 +175,12 @@ export const {
             // CRITICAL: Update the user.id to match the database ID
             user.id = dbUser.id
             
-            console.log('✅ User saved with DB ID:', dbUser.id)
-          } catch (error) {
-            console.error('❌ Database error (allowing OAuth login anyway):', error)
-            // Allow OAuth login even if DB write fails once
+            console.log('✅ User upserted successfully - Email:', dbUser.email, 'DB ID:', dbUser.id)
             return true
+          } catch (error) {
+            console.error('❌ Database error during OAuth sign in:', error)
+            // Don't allow login if we can't save to database
+            return false
           }
         }
         
@@ -213,29 +214,29 @@ export const {
             if (dbUser) {
               token.id = dbUser.id
               token.email = dbUser.email
-              console.log('✅ JWT token updated with DB user ID:', dbUser.id)
+              token.name = dbUser.name
+              token.picture = dbUser.image
+              console.log('✅ JWT token created with DB user - Email:', dbUser.email, 'ID:', dbUser.id)
+            } else {
+              console.error('❌ User not found in database after OAuth sign in')
+              throw new Error('User not found in database')
             }
             
           } catch (error) {
             console.error('❌ Error fetching user for JWT:', error)
-            // Fallback to OAuth user ID
-            token.id = user.id
-            token.email = user.email
+            throw error
           }
         } else {
           // For credentials login, use the user ID directly
           token.id = user.id
           token.email = user.email
+          token.name = user.name
+          token.picture = user.image
+          console.log('✅ JWT token created with credentials - Email:', user.email)
         }
       }
       if (account) {
         token.accessToken = account.access_token
-      }
-
-      // Ensure token always has id/email for session
-      if (!token.id && user) {
-        token.id = user.id
-        token.email = user.email
       }
 
       return token

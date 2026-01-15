@@ -36,7 +36,7 @@ export default function LoginPage() {
       });
       
       if (result?.ok) {
-        router.push('/dashboard');
+        router.push('/profile');
       } else {
         setError('Invalid email or password. Please try again.');
         console.error('Login failed:', result?.error);
@@ -55,7 +55,7 @@ export default function LoginPage() {
       console.log(`🔄 Starting ${provider} OAuth sign-in...`);
       
       await signIn(provider, { 
-        callbackUrl: '/dashboard'
+        callbackUrl: '/profile'
       });
       
     } catch (error) {

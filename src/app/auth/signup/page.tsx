@@ -90,7 +90,7 @@ export default function SignUpPage() {
     setIsLoading(true);
     try {
       const result = await signIn(provider, { 
-        callbackUrl: '/dashboard',
+        callbackUrl: '/profile',
         redirect: false // Don't redirect immediately
       });
       
@@ -108,7 +108,7 @@ export default function SignUpPage() {
         window.location.href = result.url;
       } else if (result?.ok) {
         // Success but no URL, redirect manually
-        router.push('/dashboard');
+        router.push('/profile');
       }
     } catch (error) {
       console.error('OAuth signup error:', error);
