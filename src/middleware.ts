@@ -1,41 +1,52 @@
+import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 // Paths that require authentication
 const protectedPaths = [
-  '/dashboard',
-  '/profile',
-  '/orders',
-  '/messages',
-  '/gigs/create'
+  "/dashboard",
+  "/profile",
+  "/orders",
+  "/messages",
+  "/gigs/create",
+  "/api/protected",
 ]
 
-// Paths that redirect to home if user is already authenticated
-const authPaths = ['/auth/login', '/auth/signup']
+// Paths that should not be accessible when logged in
+const authPaths = ["/auth/login", "/auth/signup"]
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
-  // Check if the current path requires authentication
-  const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
-  const isAuthPath = authPaths.some(path => pathname.startsWith(path))
-  
-  // For protected paths, we'll let NextAuth handle the redirect
-  // The auth pages will handle the actual authentication checks
-  
+
+  const isProtectedPath = protectedPaths.some((path) =>
+    pathname.startsWith(path)
+  )
+  const isAuthPath = authPaths.some((path) => pathname.startsWith(path))
+
+  const session = await auth()
+
+  // If user is not logged in and tries to access protected page or API
+  if (isProtectedPath && !session?.user) {
+    const loginUrl = new URL("/auth/login", request.url)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  // If user is already logged in and tries to access login/signup
+  if (isAuthPath && session?.user) {
+    const dashboardUrl = new URL("/dashboard", request.url)
+    return NextResponse.redirect(dashboardUrl)
+  }
+
   return NextResponse.next()
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
+     * Apply middleware to all routes except:
+     * - static files
+     * - next internals
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.png$).*)",
   ],
 }
