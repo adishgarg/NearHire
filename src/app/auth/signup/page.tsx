@@ -76,7 +76,7 @@ export default function SignUpPage() {
         setTimeout(() => router.push('/auth/signin'), 2000);
       } else {
         // Success - redirect to dashboard
-        router.push('/dashboard');
+        router.push('/profile');
       }
     } catch (error) {
       setError('Network error. Please try again.');
