@@ -148,12 +148,9 @@ export const {
             
             console.log('✅ User saved with DB ID:', dbUser.id)
           } catch (error) {
-            console.error('❌ Database error:', error)
-            return false // Block login if we can't save to database
-          } finally {
-            if (prisma) {
-              await prisma.$disconnect()
-            }
+            console.error('❌ Database error (allowing OAuth login anyway):', error)
+            // Allow OAuth login even if DB write fails once
+            return true
           }
         }
         
@@ -164,9 +161,11 @@ export const {
       }
     },
     async session({ session, token }) {
-      if (token && session.user) {
+      if (session.user && token) {
         session.user.id = token.id as string
         session.user.email = token.email as string
+        session.user.name = token.name as string || session.user.name
+        session.user.image = token.picture as string || session.user.image
       }
       return session
     },
@@ -188,7 +187,6 @@ export const {
               console.log('✅ JWT token updated with DB user ID:', dbUser.id)
             }
             
-            await prisma.$disconnect()
           } catch (error) {
             console.error('❌ Error fetching user for JWT:', error)
             // Fallback to OAuth user ID
@@ -204,6 +202,13 @@ export const {
       if (account) {
         token.accessToken = account.access_token
       }
+
+      // Ensure token always has id/email for session
+      if (!token.id && user) {
+        token.id = user.id
+        token.email = user.email
+      }
+
       return token
     },
     async redirect({ url, baseUrl }) {
