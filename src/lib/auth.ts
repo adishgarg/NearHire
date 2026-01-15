@@ -47,12 +47,41 @@ export const {
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
       allowDangerousEmailAccountLinking: true,
-      profile(profile) {
+      authorization: {
+        params: {
+          scope: "read:user user:email",
+        },
+      },
+      async profile(profile, tokens) {
         console.log("🐙 GitHub profile received:", profile.login, profile.email)
+
+        let email = profile.email as string | null
+
+        // Fetch primary email if not public
+        if (!email && tokens?.access_token) {
+          try {
+            const res = await fetch("https://api.github.com/user/emails", {
+              headers: {
+                Authorization: `Bearer ${tokens.access_token}`,
+                Accept: "application/vnd.github+json",
+              },
+            })
+
+            const emails = await res.json()
+            const primary = Array.isArray(emails)
+              ? emails.find((e: any) => e.primary && e.verified)
+              : null
+
+            email = primary?.email || null
+          } catch (err) {
+            console.error("❌ Failed to fetch GitHub emails:", err)
+          }
+        }
+
         return {
           id: profile.id.toString(),
           name: profile.name || profile.login,
-          email: profile.email,
+          email,
           image: profile.avatar_url,
         }
       },
@@ -119,8 +148,8 @@ export const {
         console.log('🚀 SignIn callback - User:', user.email, 'Provider:', account?.provider)
         
         if (!user.email) {
-          console.error('❌ No email provided')
-          return false
+          console.warn('⚠️ GitHub email missing, allowing OAuth login anyway')
+          return true
         }
 
         // For OAuth providers, create/update user in database
