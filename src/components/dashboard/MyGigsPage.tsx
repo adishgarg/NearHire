@@ -102,14 +102,18 @@ export function MyGigsPage({ gigs: initialGigs }: MyGigsPageProps) {
         method: 'DELETE',
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         setGigs(gigs.filter(gig => gig.id !== gigId));
         toast.success('Gig deleted successfully');
+      } else if (data.hasOrders) {
+        toast.error(data.error || 'Cannot delete gig with existing orders. Try pausing it instead.');
       } else {
-        throw new Error('Failed to delete gig');
+        throw new Error(data.error || 'Failed to delete gig');
       }
     } catch (error) {
-      toast.error('Failed to delete gig');
+      toast.error(error instanceof Error ? error.message : 'Failed to delete gig');
     }
   };
 

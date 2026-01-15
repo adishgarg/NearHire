@@ -308,9 +308,37 @@ export async function DELETE(
       );
     }
 
-    await prisma.gig.delete({
-      where: { id }
+    // Check if gig has any orders
+    const orderCount = await prisma.order.count({
+      where: { gigId: id }
     });
+
+    if (orderCount > 0) {
+      return NextResponse.json(
+        { 
+          error: 'Cannot delete gig with existing orders. Please deactivate it instead.',
+          hasOrders: true,
+          orderCount 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Delete related data first
+    await prisma.$transaction([
+      // Delete reviews
+      prisma.review.deleteMany({
+        where: { gigId: id }
+      }),
+      // Delete conversations
+      prisma.conversation.deleteMany({
+        where: { gigId: id }
+      }),
+      // Finally delete the gig
+      prisma.gig.delete({
+        where: { id }
+      })
+    ]);
 
     return NextResponse.json({ 
       success: true,

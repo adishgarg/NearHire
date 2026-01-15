@@ -49,7 +49,7 @@ export default function SignupForm() {
       if (signInResult?.error) {
         setError('Account created but sign in failed. Please try logging in manually.')
       } else {
-        router.push('/dashboard') // Redirect to dashboard or appropriate page
+        router.push('/profile')
       }
     } catch (error) {
       setError('Network error. Please try again.')

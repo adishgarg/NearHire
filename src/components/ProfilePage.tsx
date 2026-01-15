@@ -152,9 +152,11 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
               <Card className="border-gray-200 bg-white p-12 text-center rounded-3xl">
                 <p className="text-gray-600">No active gigs yet</p>
                 {isOwnProfile && (
-                  <Button className="mt-4 bg-emerald-600 hover:bg-emerald-700">
-                    Create Your First Gig
-                  </Button>
+                  <Link href="/gigs/create">
+                    <Button className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full">
+                      Create Your First Gig
+                    </Button>
+                  </Link>
                 )}
               </Card>
             ) : (

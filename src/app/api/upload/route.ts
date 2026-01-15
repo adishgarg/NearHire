@@ -32,11 +32,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    // Check file type - support images and documents
+    const allowedTypes = [
+      'image/jpeg', 
+      'image/png', 
+      'image/webp', 
+      'image/gif',
+      'application/pdf',
+      'application/zip',
+      'application/x-zip-compressed',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain'
+    ];
+    
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: `File type ${file.type} not supported. Only JPEG, PNG, WebP, and GIF are allowed.` },
+        { error: `File type ${file.type} not supported. Allowed types: images (JPEG, PNG, WebP, GIF), PDFs, Word docs, Excel files, and ZIP archives.` },
         { status: 400 }
       );
     }

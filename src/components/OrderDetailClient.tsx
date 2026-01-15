@@ -7,8 +7,7 @@ import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Progress } from './ui/progress';
 import { Textarea } from './ui/textarea';
-import { Input } from './ui/input';
-import { 
+import { Input } from './ui/input';import { FileUpload } from './FileUpload';import { 
   Clock, 
   CheckCircle2, 
   XCircle, 
@@ -87,9 +86,13 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [deliveryNote, setDeliveryNote] = useState('');
-  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{url: string, publicId: string}>>([]);
 
   const otherUser = isSeller ? order.buyer : order.seller;
+
+  const handleFileUpload = (files: Array<{url: string, publicId: string}>) => {
+    setUploadedFiles(files);
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline', icon: any, label: string }> = {
@@ -151,7 +154,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           status: 'DELIVERED',
-          deliverables: uploadedFiles,
+          deliverables: uploadedFiles.map(f => f.url),
           deliveryNote 
         })
       });
@@ -313,11 +316,14 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
 
           {/* Delivery Section */}
           {order.status === 'IN_PROGRESS' && isSeller && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Deliver Order</CardTitle>
+            <Card className="border border-gray-200 bg-white shadow-sm">
+              <CardHeader className="bg-gray-50 border-b border-gray-200">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <Upload className="w-5 h-5" />
+                  Deliver Order
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 bg-white p-6">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-900">Delivery Note</label>
                   <Textarea
@@ -325,25 +331,25 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
                     value={deliveryNote}
                     onChange={(e) => setDeliveryNote(e.target.value)}
                     rows={4}
+                    className="bg-gray-50 border-gray-300 focus:bg-white"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-900">Upload Deliverables</label>
-                  <div className="rounded-lg p-6 text-center bg-gray-50">
-                    <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-600 mb-2">Click to upload files or drag and drop</p>
-                    <Input type="file" multiple className="hidden" id="file-upload" />
-                    <Button variant="outline" size="sm" onClick={() => document.getElementById('file-upload')?.click()}>
-                      Choose Files
-                    </Button>
-                  </div>
+                  <FileUpload
+                    onUpload={handleFileUpload}
+                    maxFiles={10}
+                    acceptedTypes={['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'application/zip', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']}
+                    folder="deliverables"
+                    existingFiles={uploadedFiles}
+                  />
                 </div>
                 <Button 
-                  className="w-full" 
+                  className="w-full bg-gray-900 hover:bg-gray-800 text-white" 
                   onClick={handleDeliverOrder}
                   disabled={isSubmitting || uploadedFiles.length === 0}
                 >
-                  Deliver Order
+                  {isSubmitting ? 'Delivering...' : 'Deliver Order'}
                 </Button>
               </CardContent>
             </Card>
@@ -358,7 +364,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
               <CardContent>
                 <div className="space-y-2">
                   {order.deliverables.map((file, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                    <div key={idx} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg border border-amber-200">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-amber-100 rounded flex items-center justify-center">
                           <Package className="w-5 h-5 text-amber-600" />
@@ -371,6 +377,7 @@ export function OrderDetailClient({ order, isSeller }: OrderDetailProps) {
                       <Button
                         variant="outline"
                         size="sm"
+                        className="bg-white hover:bg-amber-50 border-amber-300"
                         onClick={() => window.open(file, '_blank')}
                       >
                         <Download className="w-4 h-4 mr-2" />
