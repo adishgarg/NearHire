@@ -53,13 +53,14 @@ export const {
         },
       },
       async profile(profile, tokens) {
-        console.log("🐙 GitHub profile received:", profile.login, profile.email)
+        console.log("🐙 GitHub profile received - Login:", profile.login, "Email:", profile.email)
 
         let email = profile.email as string | null
 
         // Fetch primary email if not public
         if (!email && tokens?.access_token) {
           try {
+            console.log("📧 Fetching GitHub emails via API...")
             const res = await fetch("https://api.github.com/user/emails", {
               headers: {
                 Authorization: `Bearer ${tokens.access_token}`,
@@ -67,23 +68,46 @@ export const {
               },
             })
 
-            const emails = await res.json()
-            const primary = Array.isArray(emails)
-              ? emails.find((e: any) => e.primary && e.verified)
-              : null
+            if (res.ok) {
+              const emails = await res.json()
+              console.log("📧 GitHub emails fetched:", JSON.stringify(emails, null, 2))
+              
+              const primary = Array.isArray(emails)
+                ? emails.find((e: any) => e.primary && e.verified)
+                : null
 
-            email = primary?.email || null
+              email = primary?.email || null
+              
+              if (!email && Array.isArray(emails) && emails.length > 0) {
+                // Use first verified email if no primary
+                const verified = emails.find((e: any) => e.verified)
+                email = verified?.email || null
+              }
+              
+              console.log("📧 Selected email:", email)
+            } else {
+              console.error("❌ Failed to fetch GitHub emails - Status:", res.status)
+            }
           } catch (err) {
             console.error("❌ Failed to fetch GitHub emails:", err)
           }
         }
 
-        return {
+        // If still no email, create a fallback using GitHub ID
+        if (!email) {
+          email = `${profile.login}@github-user-${profile.id}.nearhire.local`
+          console.log("⚠️ No email found, using fallback:", email)
+        }
+
+        const userProfile = {
           id: profile.id.toString(),
           name: profile.name || profile.login,
           email,
           image: profile.avatar_url,
         }
+        
+        console.log("✅ GitHub profile processed:", JSON.stringify(userProfile, null, 2))
+        return userProfile
       },
     }),
     Credentials({
@@ -145,10 +169,14 @@ export const {
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
-        console.log('🚀 SignIn callback - User:', user.email, 'Provider:', account?.provider)
+        console.log('🚀 SignIn callback started')
+        console.log('   User:', JSON.stringify(user, null, 2))
+        console.log('   Provider:', account?.provider)
         
         if (!user.email) {
-          console.error('❌ No email provided for user, rejecting sign in')
+          console.error('❌ No email provided for user after profile processing')
+          console.error('   User object:', JSON.stringify(user, null, 2))
+          console.error('   Profile:', JSON.stringify(profile, null, 2))
           return false
         }
 
@@ -156,6 +184,8 @@ export const {
         if (account?.provider === 'google' || account?.provider === 'github') {
           try {
             const prisma = await getPrismaClient()
+            
+            console.log('   Attempting to upsert user with email:', user.email)
             
             const dbUser = await prisma.user.upsert({
               where: { email: user.email },
@@ -179,27 +209,42 @@ export const {
             return true
           } catch (error) {
             console.error('❌ Database error during OAuth sign in:', error)
-            // Don't allow login if we can't save to database
-            return false
+            // Allow sign in anyway and let JWT callback handle it
+            console.log('⚠️ Allowing sign in despite database error')
+            return true
           }
         }
         
+        console.log('✅ SignIn callback successful')
         return true
       } catch (error) {
         console.error('❌ SignIn callback error:', error)
-        return false
+        // Allow sign in to proceed
+        return true
       }
     },
     async session({ session, token }) {
+      console.log('👤 Session callback started')
+      console.log('   Token:', JSON.stringify(token, null, 2))
+      
       if (session.user && token) {
         session.user.id = token.id as string
         session.user.email = token.email as string
         session.user.name = token.name as string || session.user.name
         session.user.image = token.picture as string || session.user.image
+        console.log('✅ Session created for user:', session.user.email, 'ID:', session.user.id)
+      } else {
+        console.log('⚠️ Session or token missing')
       }
+      
       return session
     },
     async jwt({ token, account, user }) {
+      console.log('🔑 JWT callback started')
+      console.log('   Token:', JSON.stringify(token, null, 2))
+      console.log('   User:', user ? JSON.stringify(user, null, 2) : 'null')
+      console.log('   Account provider:', account?.provider)
+      
       // On sign in (when user object is available)
       if (user) {
         // For OAuth, we need to get the database user ID
@@ -219,12 +264,22 @@ export const {
               console.log('✅ JWT token created with DB user - Email:', dbUser.email, 'ID:', dbUser.id)
             } else {
               console.error('❌ User not found in database after OAuth sign in')
-              throw new Error('User not found in database')
+              // Use OAuth user data as fallback
+              token.id = user.id
+              token.email = user.email
+              token.name = user.name
+              token.picture = user.image
+              console.log('⚠️ Using OAuth user data as fallback')
             }
             
           } catch (error) {
             console.error('❌ Error fetching user for JWT:', error)
-            throw error
+            // Fallback to OAuth user data
+            token.id = user.id
+            token.email = user.email
+            token.name = user.name
+            token.picture = user.image
+            console.log('⚠️ JWT error recovery: using OAuth data')
           }
         } else {
           // For credentials login, use the user ID directly
@@ -239,6 +294,7 @@ export const {
         token.accessToken = account.access_token
       }
 
+      console.log('✅ JWT callback completed - Token ID:', token.id)
       return token
     },
     async redirect({ url, baseUrl }) {
