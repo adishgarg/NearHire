@@ -203,25 +203,20 @@ export default function SubscriptionPage() {
   const isSubscriptionActive = subscription?.isActive;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f5ecdf] via-white to-[#faf8f3] text-gray-900">
+    <div className="min-h-screen bg-[#f5ecdf] text-gray-900">
       <Script
         src="https://checkout.razorpay.com/v1/checkout.js"
         strategy="afterInteractive"
         onLoad={() => setRazorpayLoaded(true)}
       />
-      {/* Decorative Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-100 to-transparent rounded-full blur-3xl opacity-40"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-orange-100 to-transparent rounded-full blur-3xl opacity-40"></div>
-      </div>
 
       <div className="container mx-auto py-16 px-4 relative z-10">
         {/* Hero Header */}
         <div className="text-center mb-20">
-          <div className="inline-flex items-center justify-center mb-6 px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200">
+          <div className="inline-flex items-center justify-center mb-6 px-4 py-2 bg-white rounded-full border border-gray-200">
             <span className="text-sm font-semibold text-blue-700">💎 Premium Seller Tools</span>
           </div>
-          <h1 className="text-6xl font-black mb-6 tracking-tight bg-gradient-to-r from-gray-900 via-blue-800 to-gray-900 bg-clip-text text-transparent">
+          <h1 className="text-4xl sm:text-5xl font-black mb-6 tracking-tight text-gray-900">
             Grow Your Gig Business
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -233,14 +228,13 @@ export default function SubscriptionPage() {
         {isSubscriptionActive && (
           <div className="mb-16">
             <div className="max-w-3xl mx-auto">
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 p-1 shadow-2xl">
-                <Card className="border-0 bg-gradient-to-br from-white to-green-50 rounded-3xl">
+              <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-md">
+                <Card className="border-0 bg-white rounded-2xl">
                   <CardContent className="pt-8 pb-8 px-8">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                       <div className="flex items-center gap-5">
                         <div className="relative">
-                          <div className="absolute inset-0 bg-green-500 rounded-full blur opacity-75 animate-pulse"></div>
-                          <div className="relative bg-gradient-to-br from-green-400 to-emerald-600 p-3 rounded-full">
+                          <div className="relative bg-green-500 p-3 rounded-full">
                             <Check className="w-8 h-8 text-white" />
                           </div>
                         </div>
@@ -282,27 +276,20 @@ export default function SubscriptionPage() {
               key={plan.name}
               className="relative group"
             >
-              {/* Gradient Border Effect */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-500 rounded-3xl opacity-75 group-hover:opacity-100 blur transition duration-300 group-hover:blur-lg"></div>
-              
-              <Card className="relative border-0 bg-white rounded-3xl shadow-xl overflow-hidden">
-                {/* Top Gradient Bar */}
-                <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-                
-                <CardHeader className="text-center pb-6 pt-8 bg-gradient-to-b from-blue-50 to-white">
+              <Card className="relative border border-gray-200 bg-white rounded-2xl shadow-md overflow-hidden">
+                <CardHeader className="text-center pb-6 pt-8 bg-white">
                   <div className="inline-block mx-auto mb-4 px-3 py-1 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full">
                     <span className="text-xs font-bold text-blue-700">SELLER PLAN</span>
                   </div>
                   <CardTitle className="text-4xl font-black text-gray-900">{plan.name}</CardTitle>
                   <div className="mt-8">
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-6xl font-black text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text">{plan.displayPrice}</span>
+                      <span className="text-5xl sm:text-6xl font-black text-gray-900">{plan.displayPrice}</span>
                       <span className="text-gray-600 font-medium">/month</span>
                     </div>
                     <p className="text-sm text-gray-500 mt-2">Billed monthly • Cancel anytime</p>
                   </div>
                 </CardHeader>
-                
                 <CardContent className="px-8 py-8 space-y-8">
                   <Button
                     onClick={() => handleSubscribe(plan.name)}
@@ -310,7 +297,7 @@ export default function SubscriptionPage() {
                     className={`w-full text-lg py-7 rounded-2xl font-bold tracking-wide transition-all duration-300 ${
                       currentPlan === plan.name
                         ? 'bg-gray-100 text-gray-700 border-2 border-gray-300 hover:bg-gray-100'
-                        : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-2xl hover:scale-105 transform'
+                        : 'bg-gray-900 text-white hover:bg-gray-800'
                     }`}
                   >
                     {processingPlan === plan.name ? (
@@ -344,17 +331,13 @@ export default function SubscriptionPage() {
 
         {/* FAQ / Additional Info */}
         <div className="max-w-4xl mx-auto mb-20">
-          <Card className="border-0 bg-white shadow-xl rounded-3xl overflow-hidden">
-            {/* Top Gradient Bar */}
-            <div className="h-1 bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-500"></div>
-            
-            <CardHeader className="bg-gradient-to-b from-orange-50 to-white pb-6">
+          <Card className="border border-gray-200 bg-white shadow-md rounded-2xl overflow-hidden">
+            <CardHeader className="bg-white pb-6">
               <CardTitle className="text-3xl font-black text-gray-900">
                 Frequently Asked Questions
               </CardTitle>
               <p className="text-gray-600 mt-2">Everything you need to know about your subscription</p>
             </CardHeader>
-            
             <CardContent className="px-8 py-8">
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-3 pb-8 md:pb-0 md:border-r-2 md:border-gray-100 md:pr-8">
@@ -370,7 +353,6 @@ export default function SubscriptionPage() {
                     </div>
                   </div>
                 </div>
-                
                 <div className="space-y-3 pb-8 md:pb-0">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mt-1">
@@ -384,7 +366,6 @@ export default function SubscriptionPage() {
                     </div>
                   </div>
                 </div>
-                
                 <div className="space-y-3 pb-8 md:pb-0 md:border-r-2 md:border-gray-100 md:pr-8">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mt-1">
@@ -398,7 +379,6 @@ export default function SubscriptionPage() {
                     </div>
                   </div>
                 </div>
-                
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mt-1">
@@ -420,17 +400,17 @@ export default function SubscriptionPage() {
         {/* Trust Section */}
         <div className="max-w-4xl mx-auto text-center">
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="p-6 bg-white rounded-2xl border-2 border-gray-100 hover:border-blue-300 transition-colors">
+            <div className="p-6 bg-white rounded-2xl border border-gray-200 hover:border-gray-400 transition-colors">
               <div className="text-3xl mb-3">🔒</div>
               <h4 className="font-bold text-gray-900 mb-2">Secure Payments</h4>
               <p className="text-sm text-gray-600">Industry-leading encryption protecting your data</p>
             </div>
-            <div className="p-6 bg-white rounded-2xl border-2 border-gray-100 hover:border-blue-300 transition-colors">
+            <div className="p-6 bg-white rounded-2xl border border-gray-200 hover:border-gray-400 transition-colors">
               <div className="text-3xl mb-3">⚡</div>
               <h4 className="font-bold text-gray-900 mb-2">Instant Access</h4>
               <p className="text-sm text-gray-600">Start selling immediately after subscription</p>
             </div>
-            <div className="p-6 bg-white rounded-2xl border-2 border-gray-100 hover:border-blue-300 transition-colors">
+            <div className="p-6 bg-white rounded-2xl border border-gray-200 hover:border-gray-400 transition-colors">
               <div className="text-3xl mb-3">🎯</div>
               <h4 className="font-bold text-gray-900 mb-2">Expert Support</h4>
               <p className="text-sm text-gray-600">24/7 priority support for all subscribers</p>

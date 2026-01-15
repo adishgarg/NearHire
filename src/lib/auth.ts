@@ -1,3 +1,4 @@
+export const runtime = "nodejs"
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
@@ -5,22 +6,29 @@ import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 
 // Helper function to get Prisma client safely
+let prismaInstance: any
+
 async function getPrismaClient() {
   try {
     console.log('🔄 Initializing Prisma v5 client...')
     
     const { PrismaClient } = await import('@prisma/client')
-    const prisma = new PrismaClient({
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    })
-    
-    await prisma.$connect()
-    console.log('✅ Prisma client connected successfully')
-    return prisma
+    if (!prismaInstance) {
+      prismaInstance = new PrismaClient({
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      })
+      await prismaInstance.$connect()
+      console.log('✅ Prisma client connected successfully')
+    }
+    return prismaInstance
   } catch (error) {
     console.error('❌ Failed to initialize Prisma client:', error)
     throw error
   }
+}
+
+if (!process.env.NEXTAUTH_URL) {
+  throw new Error("NEXTAUTH_URL is not set. OAuth will not work without it.")
 }
 
 export const {
@@ -29,7 +37,6 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
-  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -40,6 +47,15 @@ export const {
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
       allowDangerousEmailAccountLinking: true,
+      profile(profile) {
+        console.log("🐙 GitHub profile received:", profile.login, profile.email)
+        return {
+          id: profile.id.toString(),
+          name: profile.name || profile.login,
+          email: profile.email,
+          image: profile.avatar_url,
+        }
+      },
     }),
     Credentials({
       name: "credentials",
