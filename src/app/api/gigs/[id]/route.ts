@@ -237,7 +237,7 @@ export async function PUT(
       if (!finalTitle || finalTitle.trim() === '') missingFields.push('title');
       if (!finalDescription || finalDescription.trim() === '') missingFields.push('description');
       if (!finalCategoryId) missingFields.push('category');
-      if (!finalPrice || finalPrice < 5) missingFields.push('price');
+      if (!finalPrice || Number(finalPrice) < 5) missingFields.push('price');
       if (!finalDeliveryTime || finalDeliveryTime < 1) missingFields.push('delivery time');
       if (!finalImages || finalImages.length === 0) missingFields.push('at least one image');
       

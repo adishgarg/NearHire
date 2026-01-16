@@ -58,7 +58,7 @@ export async function PATCH(
       if (!gig.title || gig.title.trim() === '') missingFields.push('title');
       if (!gig.description || gig.description.trim() === '') missingFields.push('description');
       if (!gig.categoryId) missingFields.push('category');
-      if (!gig.price || gig.price < 5) missingFields.push('price');
+      if (!gig.price || Number(gig.price) < 5) missingFields.push('price');
       if (!gig.deliveryTime || gig.deliveryTime < 1) missingFields.push('delivery time');
       if (!gig.images || gig.images.length === 0) missingFields.push('at least one image');
       
