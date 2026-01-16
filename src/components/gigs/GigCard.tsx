@@ -114,9 +114,9 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
 
   return (
     <Link href={`/gigs/${gig.id}`} className="group">
-      <Card className="border-gray-200 bg-white hover:border-gray-300 transition-all duration-200 overflow-hidden rounded-3xl">
+      <Card className="border-gray-200 bg-white hover:border-gray-300 transition-all duration-200 overflow-hidden rounded-3xl h-full flex flex-col">
         {/* Image Section */}
-        <div className="relative h-48 overflow-hidden">
+        <div className="relative h-40 overflow-hidden flex-shrink-0">
           {gig.images[0] && !imageError ? (
             <Image
               src={gig.images[0]}
@@ -158,18 +158,18 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
           )}
         </div>
 
-        <CardContent className="p-4 space-y-3">
+        <CardContent className="p-3 space-y-2 flex-1 flex flex-col">
           {/* Seller Info */}
-          <div className="flex items-center gap-2">
-            <Avatar className="w-6 h-6 border border-gray-300">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Avatar className="w-5 h-5 border border-gray-300">
               <AvatarImage src={gig.seller.image || ''} alt={gig.seller.name || 'Seller'} />
               <AvatarFallback className="text-xs bg-gray-100 text-gray-900">
                 {gig.seller.name?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm text-gray-600">{gig.seller.name}</span>
+            <span className="text-xs text-gray-600 truncate">{gig.seller.name}</span>
             {gig.seller.rating > 0 && (
-              <div className="flex items-center gap-1 ml-auto">
+              <div className="flex items-center gap-1 ml-auto flex-shrink-0">
                 <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                 <span className="text-xs text-gray-600">
                   {gig.seller.rating.toFixed(1)}
@@ -179,64 +179,61 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
           </div>
 
           {/* Title */}
-          <h3 className="font-medium text-gray-900 line-clamp-2 group-hover:text-gray-700 transition-colors leading-tight">
+          <h3 className="font-medium text-gray-900 text-sm line-clamp-2 group-hover:text-gray-700 transition-colors leading-snug flex-shrink-0">
             {gig.title}
           </h3>
 
           {/* Tags */}
-          <div className="flex flex-wrap gap-1">
-            {gig.tags.slice(0, 3).map((tag) => (
+          <div className="flex flex-wrap gap-1 flex-shrink-0">
+            {gig.tags.slice(0, 2).map((tag) => (
               <Badge 
                 key={tag} 
                 variant="outline" 
-                className="text-xs border-gray-300 text-gray-600"
+                className="text-xs border-gray-300 text-gray-600 truncate max-w-[80px] py-0"
               >
                 {tag}
               </Badge>
             ))}
-            {gig.tags.length > 3 && (
-              <Badge variant="outline" className="text-xs border-gray-300 text-gray-600">
-                +{gig.tags.length - 3}
+            {gig.tags.length > 2 && (
+              <Badge variant="outline" className="text-xs border-gray-300 text-gray-600 py-0">
+                +{gig.tags.length - 2}
               </Badge>
             )}
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-3 text-xs text-gray-500">
+          <div className="flex items-center gap-2 text-xs text-gray-500 flex-wrap flex-shrink-0">
             {hasReviews && (
               <div className="flex items-center gap-1">
                 <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                 <span className="text-yellow-500">{displayRating.toFixed(1)}</span>
-                <span>({gig.reviewCount})</span>
               </div>
             )}
             
             <div className="flex items-center gap-1">
-              <Eye className="w-3 h-3" />
-              <span>{gig.views}</span>
-            </div>
-
-            <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              <span>{gig.deliveryTime} day{gig.deliveryTime !== 1 ? 's' : ''}</span>
+              <span>{gig.deliveryTime}d</span>
             </div>
 
             {(gig.city || gig.distance !== null && gig.distance !== undefined) && (
-              <div className="flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
+              <div className="flex items-center gap-1 truncate">
+                <MapPin className="w-3 h-3 flex-shrink-0" />
                 {gig.distance !== null && gig.distance !== undefined ? (
-                  <span>{gig.distance < 1 ? '< 1' : gig.distance.toFixed(0)} km away</span>
+                  <span className="truncate">{gig.distance < 1 ? '< 1' : gig.distance.toFixed(0)}km</span>
                 ) : (
-                  <span>{gig.city}</span>
+                  <span className="truncate">{gig.city}</span>
                 )}
               </div>
             )}
           </div>
 
+          {/* Spacer to push price to bottom */}
+          <div className="flex-1"></div>
+
           {/* Price */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-            <span className="text-sm text-gray-500">Starting at</span>
-            <span className="text-lg font-semibold text-gray-900 font-playfair">
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200 flex-shrink-0">
+            <span className="text-xs text-gray-500">Starting at</span>
+            <span className="text-base font-semibold text-gray-900 font-playfair">
               ₹{displayPrice}
             </span>
           </div>
