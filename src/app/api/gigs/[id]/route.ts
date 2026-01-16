@@ -189,7 +189,7 @@ export async function PUT(
 
     if (price && price < 5) {
       return NextResponse.json(
-        { error: 'Minimum price is $5' },
+        { error: 'Minimum price is ₹5' },
         { status: 400 }
       );
     }
@@ -213,6 +213,45 @@ export async function PUT(
         });
       }
       categoryId = categoryRecord.id;
+    }
+
+    // If activating a gig, validate all required fields
+    if (isActive === true) {
+      // Get current gig data to check what's missing
+      const currentGig = await prisma.gig.findUnique({ where: { id } });
+      if (!currentGig) {
+        return NextResponse.json(
+          { error: 'Gig not found' },
+          { status: 404 }
+        );
+      }
+
+      const missingFields = [];
+      const finalTitle = title || currentGig.title;
+      const finalDescription = description || currentGig.description;
+      const finalCategoryId = categoryId;
+      const finalPrice = price || currentGig.price;
+      const finalDeliveryTime = deliveryTime || currentGig.deliveryTime;
+      const finalImages = images || currentGig.images;
+      
+      if (!finalTitle || finalTitle.trim() === '') missingFields.push('title');
+      if (!finalDescription || finalDescription.trim() === '') missingFields.push('description');
+      if (!finalCategoryId) missingFields.push('category');
+      if (!finalPrice || finalPrice < 5) missingFields.push('price');
+      if (!finalDeliveryTime || finalDeliveryTime < 1) missingFields.push('delivery time');
+      if (!finalImages || finalImages.length === 0) missingFields.push('at least one image');
+      
+      if (missingFields.length > 0) {
+        return NextResponse.json(
+          { 
+            error: 'Failed to update gig',
+            message: 'Cannot publish gig with incomplete details. Please complete all required fields.',
+            missingFields: missingFields,
+            details: 'Missing: ' + missingFields.join(', ')
+          },
+          { status: 400 }
+        );
+      }
     }
 
     const gig = await prisma.gig.update({

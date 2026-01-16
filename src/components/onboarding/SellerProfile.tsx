@@ -156,7 +156,7 @@ export function SellerProfile({ onComplete, onSkip }: SellerProfileProps) {
             <div>
               <Label htmlFor="hourlyRate" className="text-gray-700">
                 <DollarSign className="inline h-4 w-4 mr-2" />
-                Hourly Rate (USD) *
+                Hourly Rate (INR) *
               </Label>
               <Input
                 id="hourlyRate"

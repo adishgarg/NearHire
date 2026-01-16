@@ -84,7 +84,7 @@ export function GigCard({ gig, onClick }: GigCardProps) {
         <div className="flex items-center justify-between border-t border-gray-200 pt-4">
           <div className="text-gray-600 text-sm">
             <span className="text-xs uppercase tracking-wider">Starting at</span>
-            <p className="text-gray-900 text-xl font-serif">${gig.price}</p>
+            <p className="text-gray-900 text-xl font-serif">₹{gig.price}</p>
           </div>
         </div>
       </div>

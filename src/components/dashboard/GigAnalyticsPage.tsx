@@ -139,7 +139,7 @@ export function GigAnalyticsPage({ gig, analytics }: GigAnalyticsPageProps) {
               <DollarSign className="h-5 w-5 text-gray-400" />
             </div>
             <div className="text-3xl font-serif font-semibold text-emerald-600">
-              ${analytics.totalRevenue.toLocaleString()}
+              ₹{analytics.totalRevenue.toLocaleString()}
             </div>
           </Card>
 
@@ -228,7 +228,7 @@ export function GigAnalyticsPage({ gig, analytics }: GigAnalyticsPageProps) {
                   >
                     <div>
                       <div className="font-medium text-gray-900">
-                        ${Number(order.price).toFixed(0)}
+                        ₹{Number(order.price).toFixed(0)}
                       </div>
                       <div className="text-sm text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString('en-US', {

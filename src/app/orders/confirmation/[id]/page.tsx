@@ -247,19 +247,19 @@ export default function OrderConfirmationPage() {
 
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Service Price</span>
-                <span className="font-medium">${Number(order.price).toFixed(2)}</span>
+                <span className="font-medium">₹{Number(order.price).toFixed(2)}</span>
               </div>
               
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Platform Fee</span>
-                <span className="font-medium">${Number(order.platformFee).toFixed(2)}</span>
+                <span className="font-medium">₹{Number(order.platformFee).toFixed(2)}</span>
               </div>
               
               <Separator />
               
               <div className="flex justify-between">
                 <span className="font-semibold">Total Paid</span>
-                <span className="font-bold text-lg">${totalAmount.toFixed(2)}</span>
+                <span className="font-bold text-lg">₹{totalAmount.toFixed(2)}</span>
               </div>
             </div>
 

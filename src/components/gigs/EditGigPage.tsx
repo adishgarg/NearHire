@@ -210,7 +210,7 @@ export function EditGigPage({ gig }: EditGigPageProps) {
       return;
     }
     if (!price || Number(price) < 5) {
-      toast.error('Minimum price is $5');
+      toast.error('Minimum price is ₹5');
       return;
     }
     if (!deliveryTime) {

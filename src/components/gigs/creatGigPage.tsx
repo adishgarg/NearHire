@@ -35,6 +35,7 @@ export function CreateGigPage() {
   const [currentTag, setCurrentTag] = useState('');
   const [images, setImages] = useState<Array<{url: string; publicId: string}>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
   const [isGettingLocation, setIsGettingLocation] = useState(false);
@@ -170,7 +171,7 @@ export function CreateGigPage() {
       return;
     }
     if (!price || Number(price) < 5) {
-      toast.error('Minimum price is $5');
+      toast.error('Minimum price is ₹5');
       return;
     }
     if (!deliveryTime) {
@@ -237,6 +238,54 @@ export function CreateGigPage() {
       toast.error(errorMessage, { id: toastId });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    // Minimal validation for draft
+    if (!title.trim()) {
+      toast.error('Please enter at least a title to save as draft');
+      return;
+    }
+
+    setIsSavingDraft(true);
+    const toastId = toast.loading('Saving draft...');
+
+    try {
+      const draftData = {
+        title: title.trim(),
+        description: description.trim(),
+        category: category || undefined,
+        tags,
+        basicPrice: price ? Number(price) : 0,
+        basicDescription: description.trim(),
+        basicDeliveryTime: deliveryTime ? Number(deliveryTime) : 1,
+        basicRevisions: 1,
+        images: images.map(img => img.url),
+        city: city || null,
+        address: address || null,
+      };
+
+      const response = await fetch('/api/gigs/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(draftData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success('Draft saved successfully!', { id: toastId });
+        router.push('/dashboard/my-gigs?tab=drafts');
+      } else {
+        throw new Error(result.error || 'Failed to save draft');
+      }
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save draft. Please try again.';
+      toast.error(errorMessage, { id: toastId });
+    } finally {
+      setIsSavingDraft(false);
     }
   };
 
@@ -509,7 +558,7 @@ export function CreateGigPage() {
                 <Button 
                   className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-full"
                   onClick={handleSubmit}
-                  disabled={!title || !category || !description || !price || !deliveryTime || isSubmitting}
+                  disabled={!title || !category || !description || !price || !deliveryTime || isSubmitting || isSavingDraft}
                 >
                   {isSubmitting ? (
                     <>
@@ -522,9 +571,18 @@ export function CreateGigPage() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="w-full border-gray-300 text-gray-700 hover:bg-white rounded-full"
+                  className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+                  onClick={handleSaveDraft}
+                  disabled={!title || isSubmitting || isSavingDraft}
                 >
-                  Save as Draft
+                  {isSavingDraft ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving Draft...
+                    </>
+                  ) : (
+                    'Save as Draft'
+                  )}
                 </Button>
               </div>
             </div>

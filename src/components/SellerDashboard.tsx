@@ -44,7 +44,7 @@ export function SellerDashboard({ gigs = mockGigs, onGigClick, onCreateGig }: Se
   const stats = [
     {
       title: 'Total Earnings',
-      value: '$12,450',
+      value: '₹12,450',
       change: '+12.5%',
       icon: DollarSign,
       color: 'text-emerald-600',

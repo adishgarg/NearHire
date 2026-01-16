@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     if (basicPrice < 5) {
       return NextResponse.json(
-        { error: 'Minimum price is $5' },
+        { error: 'Minimum price is ₹5' },
         { status: 400 }
       );
     }

@@ -329,7 +329,7 @@ export function MarketplacePage() {
                 {/* Price Range */}
                 <div>
                   <label className="block text-sm font-medium mb-3 text-gray-700">
-                    Price Range: <span className="font-semibold text-gray-900">${priceRange[0]} - ${priceRange[1]}</span>
+                    Price Range: <span className="font-semibold text-gray-900">₹{priceRange[0]} - ₹{priceRange[1]}</span>
                   </label>
                   <Slider
                     value={priceRange}

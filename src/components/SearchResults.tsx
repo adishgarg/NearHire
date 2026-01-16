@@ -129,8 +129,8 @@ export function SearchResults({ gigs = mockGigs, searchQuery, query, category, o
                   className="mb-4"
                 />
                 <div className="flex items-center justify-between text-sm text-gray-600 font-semibold">
-                  <span>${priceRange[0]}</span>
-                  <span>${priceRange[1]}</span>
+                  <span>₹{priceRange[0]}</span>
+                  <span>₹{priceRange[1]}</span>
                 </div>
               </Card>
 

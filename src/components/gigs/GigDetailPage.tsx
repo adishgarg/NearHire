@@ -328,7 +328,7 @@ export function GigDetailPage() {
               <CardHeader>
                 <CardTitle className="text-center">
                   <div className="text-3xl font-bold text-gray-900">
-                    ${displayPrice}
+                    ₹{displayPrice}
                   </div>
                   <div className="text-sm text-gray-600 mt-1">
                     <Clock className="w-4 h-4 inline mr-1" />

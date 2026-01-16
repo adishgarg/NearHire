@@ -188,7 +188,7 @@ export function OrdersPage({ isSelling = false }: { isSelling?: boolean }) {
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Total</p>
-                <p className="text-gray-900 text-sm font-semibold">${order.price}</p>
+                <p className="text-gray-900 text-sm font-semibold">₹{order.price}</p>
               </div>
             </div>
 

@@ -81,7 +81,7 @@ export default function TestGigsPage() {
                     <ul className="text-sm space-y-1">
                       <li><strong>ID:</strong> {gig.id}</li>
                       <li><strong>Title:</strong> {gig.title}</li>
-                      <li><strong>Price:</strong> ${gig.price}</li>
+                      <li><strong>Price:</strong> ₹{gig.price}</li>
                       <li><strong>Rating:</strong> {gig.rating}</li>
                       <li><strong>Reviews:</strong> {gig.reviewCount}</li>
                       <li><strong>Active:</strong> {gig.isActive ? 'Yes' : 'No'}</li>

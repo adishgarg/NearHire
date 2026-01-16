@@ -216,7 +216,7 @@ export function GigDetail({ gigId, gig, onBack }: GigDetailProps) {
               <Card className="border-gray-200 bg-white p-6 rounded-3xl">
                 <div className="mb-6">
                   <div className="mb-2 flex items-baseline gap-2">
-                    <span className="text-4xl text-gray-900 font-serif font-semibold">${currentGig.price}</span>
+                    <span className="text-4xl text-gray-900 font-serif font-semibold">₹{currentGig.price}</span>
                     <span className="text-gray-600">/ project</span>
                   </div>
                   <p className="text-gray-600">{currentGig.description.substring(0, 60)}...</p>
@@ -239,7 +239,7 @@ export function GigDetail({ gigId, gig, onBack }: GigDetailProps) {
 
                 <div className="space-y-2">
                   <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-full py-6">
-                    Continue (${currentGig.price})
+                    Continue (₹{currentGig.price})
                   </Button>
                   <Button variant="outline" className="w-full border-gray-300 text-gray-900 hover:bg-gray-50 rounded-full py-6">
                     <MessageSquare className="mr-2 h-4 w-4" />

@@ -79,13 +79,22 @@ export function MyGigsPage({ gigs: initialGigs }: MyGigsPageProps) {
         body: JSON.stringify({ isActive: !currentStatus }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         setGigs(gigs.map(gig => 
           gig.id === gigId ? { ...gig, isActive: !currentStatus } : gig
         ));
         toast.success(`Gig ${!currentStatus ? 'activated' : 'paused'} successfully`);
       } else {
-        throw new Error('Failed to update gig status');
+        // Show detailed error message with missing fields
+        if (data.message && data.details) {
+          toast.error(`${data.message}\n${data.details}`);
+        } else if (data.error) {
+          toast.error(data.error);
+        } else {
+          toast.error('Failed to update gig status');
+        }
       }
     } catch (error) {
       toast.error('Failed to update gig status');
@@ -350,7 +359,7 @@ export function MyGigsPage({ gigs: initialGigs }: MyGigsPageProps) {
                       )}
                       <div className="ml-auto">
                         <span className="text-2xl font-serif font-semibold text-gray-900">
-                          ${Number(gig.price).toFixed(0)}
+                          ₹{Number(gig.price).toFixed(0)}
                         </span>
                       </div>
                     </div>

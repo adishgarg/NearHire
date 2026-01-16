@@ -611,7 +611,7 @@ export async function sendNewOrderNotificationToSeller(
               </div>
               <div class="order-row">
                 <span style="color: #6b7280;">Your Earnings</span>
-                <span style="font-weight: 600; color: #16a34a;">$${order.price.toFixed(2)}</span>
+                <span style="font-weight: 600; color: #16a34a;">₹${order.price.toFixed(2)}</span>
               </div>
             </div>
 

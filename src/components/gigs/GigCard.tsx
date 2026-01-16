@@ -237,7 +237,7 @@ export function GigCard({ gig, variant = 'default' }: GigCardProps) {
           <div className="flex items-center justify-between pt-2 border-t border-gray-200">
             <span className="text-sm text-gray-500">Starting at</span>
             <span className="text-lg font-semibold text-gray-900 font-playfair">
-              ${displayPrice}
+              ₹{displayPrice}
             </span>
           </div>
         </CardContent>
