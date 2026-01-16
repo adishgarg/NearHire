@@ -175,7 +175,7 @@ export function ProfilePage({ user, gigs = [], reviews = [], onGigClick, isOwnPr
                       level: 'New Seller'
                     }
                   };
-                  return <GigCard key={gig.id} gig={gigWithSeller} onClick={() => onGigClick?.(gigWithSeller)} />;
+                  return <GigCard key={gig.id} gig={gigWithSeller} />;
                 })}
               </div>
             )}
