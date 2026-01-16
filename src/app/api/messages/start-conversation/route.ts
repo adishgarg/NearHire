@@ -46,7 +46,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if a conversation already exists between these users for this gig/order
+    // Check if a conversation already exists between these two users
+    // We want only ONE conversation per user pair, regardless of gig/order
     const existingConversation = await prisma.conversation.findFirst({
       where: {
         AND: [
@@ -64,9 +65,16 @@ export async function POST(request: Request) {
               },
             },
           },
-          ...(gigId ? [{ gigId }] : []),
-          ...(orderId ? [{ orderId }] : []),
         ],
+        // Ensure it's exactly a 2-person conversation (no group chats)
+        participants: {
+          every: {
+            OR: [
+              { userId: userId },
+              { userId: otherUserId },
+            ],
+          },
+        },
       },
       include: {
         participants: {
@@ -86,6 +94,18 @@ export async function POST(request: Request) {
     });
 
     if (existingConversation) {
+      // If gig/order context is provided, update the conversation with this context
+      // This allows the conversation to display the latest gig/order being discussed
+      if (gigId || orderId) {
+        await prisma.conversation.update({
+          where: { id: existingConversation.id },
+          data: {
+            ...(gigId && { gigId }),
+            ...(orderId && { orderId }),
+          },
+        });
+      }
+
       return NextResponse.json({
         conversationId: existingConversation.id,
         isNew: false,

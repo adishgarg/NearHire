@@ -6,10 +6,16 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { Send, Paperclip, MoreVertical, Search, Loader2 } from 'lucide-react';
+import { Send, Paperclip, MoreVertical, Search, Loader2, Trash2 } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { useSession } from 'next-auth/react';
 import { formatDistanceToNow } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 // Ably will be dynamically imported below. We no longer use Socket.IO on the client.
 
 interface Message {
@@ -52,6 +58,7 @@ export function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [isConnected, setIsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -92,10 +99,11 @@ export function MessagesPage() {
           setIsConnected(false);
         });
 
-        // Subscribe to direct user channel for notifications
+        // Subscribe to direct user channel for notifications and typing indicators
         if (!session?.user?.id) return;
         const userCh = client.channels.get(`user:${session.user.id}`);
         userChannelRef.current = userCh;
+        
         userCh.subscribe('notification:new-message', (msg: any) => {
           const message = msg.data;
           // If currently viewing the conversation, it'll arrive via conversation channel; otherwise update conv list
@@ -104,6 +112,26 @@ export function MessagesPage() {
               conv.id === message.conversationId ? { ...conv, lastMessage: message.content, timestamp: new Date(), unread: (conv.unread || 0) + 1 } : conv
             )
           );
+        });
+
+        // Listen for typing indicators from other users
+        userCh.subscribe('typing:start', (msg: any) => {
+          const { userId, conversationId } = msg.data || {};
+          if (!userId || !conversationId) return;
+          // Only show typing if we're viewing that conversation
+          if (conversationId === selectedConversation) {
+            setTypingUsers((prev) => new Set(prev).add(userId));
+          }
+        });
+
+        userCh.subscribe('typing:stop', (msg: any) => {
+          const { userId } = msg.data || {};
+          if (!userId) return;
+          setTypingUsers((prev) => {
+            const next = new Set(prev);
+            next.delete(userId);
+            return next;
+          });
         });
       } catch (err) {
         console.warn('Ably init failed', err);
@@ -151,10 +179,14 @@ export function MessagesPage() {
       channel.subscribe('message:new', (msg: any) => {
         const message = msg.data;
         if (!mounted) return;
+        
+        // Skip if this is our own message (we already have it optimistically)
+        if (message.senderId === session?.user?.id) return;
+        
         setMessages((prev) => {
           const exists = prev.some((m) => m.id === message.id);
           if (exists) return prev;
-          return [...prev, { ...message, isOwn: message.senderId === session?.user?.id }];
+          return [...prev, { ...message, isOwn: false }];
         });
 
         setConversations((prev) =>
@@ -162,21 +194,7 @@ export function MessagesPage() {
         );
       });
 
-      channel.subscribe('typing:start', (msg: any) => {
-        const { userId } = msg.data || {};
-        if (!userId) return;
-        setTypingUsers((prev) => new Set(prev).add(userId));
-      });
-
-      channel.subscribe('typing:stop', (msg: any) => {
-        const { userId } = msg.data || {};
-        if (!userId) return;
-        setTypingUsers((prev) => {
-          const next = new Set(prev);
-          next.delete(userId);
-          return next;
-        });
-      });
+      // Typing indicators are now handled via user channels, not conversation channels
     }
 
     subscribeConv();
@@ -285,17 +303,26 @@ export function MessagesPage() {
       );
 
       // POST to server route which will save and publish via Ably server-side helper
-      await fetch('/api/messages/send', {
+      const response = await fetch('/api/messages/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ conversationId: selectedConversation, receiverId: selectedConv.user.id, content: messageContent }),
       });
 
+      // Replace optimistic message with the real one from server
+      if (response.ok) {
+        const realMessage = await response.json();
+        setMessages((prev) => 
+          prev.map((msg) => (msg.id === tempId ? { ...realMessage, isOwn: true } : msg))
+        );
+      }
+
       // Stop typing indicator (publish stop via Ably if available)
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       try {
         const client = ablyClientRef.current;
-        client?.channels.get(`conversation:${selectedConversation}`)?.publish('typing:stop', { userId: session.user.id });
+        const receiverId = selectedConv.user.id;
+        client?.channels.get(`user:${receiverId}`)?.publish('typing:stop', { userId: session.user.id });
       } catch (e) {}
     } catch (error) {
       console.error('Error sending message:', error);
@@ -307,18 +334,60 @@ export function MessagesPage() {
   const handleTyping = () => {
     if (!selectedConversation || !session?.user?.id) return;
 
+    const selectedConv = conversations.find((c) => c.id === selectedConversation);
+    if (!selectedConv) return;
+
+    const receiverId = selectedConv.user.id;
+
     try {
       const client = ablyClientRef.current;
-      client?.channels.get(`conversation:${selectedConversation}`)?.publish('typing:start', { userId: session.user.id });
+      // Publish typing event directly to the other user's channel
+      client?.channels.get(`user:${receiverId}`)?.publish('typing:start', { 
+        userId: session.user.id, 
+        conversationId: selectedConversation 
+      });
     } catch (e) {}
 
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       try {
         const client = ablyClientRef.current;
-        client?.channels.get(`conversation:${selectedConversation}`)?.publish('typing:stop', { userId: session.user?.id });
+        client?.channels.get(`user:${receiverId}`)?.publish('typing:stop', { 
+          userId: session?.user?.id 
+        });
       } catch (e) {}
     }, 2000);
+  };
+
+  const deleteConversation = async (conversationId: string) => {
+    if (!confirm('Are you sure you want to delete this conversation? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      const response = await fetch(`/api/messages/${conversationId}/delete`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Remove from local state
+        setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+        
+        // If this was the selected conversation, clear selection
+        if (selectedConversation === conversationId) {
+          setSelectedConversation(null);
+          setMessages([]);
+        }
+      } else {
+        alert('Failed to delete conversation');
+      }
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      alert('Failed to delete conversation');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const formatTimestamp = (timestamp: Date | string) => {
@@ -391,13 +460,12 @@ export function MessagesPage() {
                   {filteredConversations.map((conv) => (
                     <div
                       key={conv.id}
-                      className={`p-3 sm:p-4 cursor-pointer transition-colors hover:bg-gray-50 ${
+                      className={`p-3 sm:p-4 transition-colors hover:bg-gray-50 relative ${
                         selectedConversation === conv.id ? 'bg-gray-50' : ''
                       }`}
-                      onClick={() => setSelectedConversation(conv.id)}
                     >
                       <div className="flex items-start gap-2 sm:gap-3">
-                        <div className="relative">
+                        <div className="relative flex-shrink-0 cursor-pointer" onClick={() => setSelectedConversation(conv.id)}>
                           <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-gray-300">
                             <AvatarImage src={conv.user.avatar || undefined} alt={conv.user.name} />
                             <AvatarFallback className="text-sm sm:text-base">{conv.user.name[0]?.toUpperCase()}</AvatarFallback>
@@ -406,21 +474,47 @@ export function MessagesPage() {
                             <div className="absolute bottom-0 right-0 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-emerald-600 border-2 border-white" />
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedConversation(conv.id)}>
                           <div className="flex items-center justify-between mb-1">
-                            <p className="text-sm sm:text-base text-gray-900 font-semibold truncate">{conv.user.name}</p>
-                            <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap ml-2">{formatTimestamp(conv.timestamp)}</span>
+                            <p className="text-sm sm:text-base text-gray-900 font-semibold truncate pr-2">{conv.user.name}</p>
+                            <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">{formatTimestamp(conv.timestamp)}</span>
                           </div>
                           <p className="text-xs sm:text-sm text-gray-600 truncate">{conv.lastMessage}</p>
                           {conv.gigTitle && (
                             <p className="text-[10px] sm:text-xs text-gray-500 mt-1 truncate">{conv.gigTitle}</p>
                           )}
                         </div>
-                        {conv.unread > 0 && (
-                          <Badge className="bg-gray-900 text-white h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-[10px] sm:text-xs flex-shrink-0">
-                            {conv.unread}
-                          </Badge>
-                        )}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {conv.unread > 0 && (
+                            <Badge className="bg-gray-900 text-white h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-[10px] sm:text-xs">
+                              {conv.unread}
+                            </Badge>
+                          )}
+                          {/* Three dots menu */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-white border-gray-200">
+                              <DropdownMenuItem
+                                className="text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
+                                disabled={deleting}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteConversation(conv.id);
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete Conversation
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -462,9 +556,6 @@ export function MessagesPage() {
                         </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
-                      <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </Button>
                   </div>
 
                   {/* Messages */}

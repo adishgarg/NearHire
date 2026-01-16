@@ -16,13 +16,17 @@ import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
-import { copyBoxInto } from 'framer-motion';
+import { useNotifications } from '@/hooks/useNotifications';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { formatDistanceToNow } from 'date-fns';
 
 export function Header() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { unreadCount: unreadMessageCount } = useUnreadMessages();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -301,27 +305,63 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative text-gray-600 hover:text-gray-900 hidden sm:inline-flex">
                       <Bell className="h-5 w-5" />
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-gray-900 border-0 text-xs text-white">
-                        3
-                      </Badge>
+                      {unreadCount > 0 && (
+                        <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-gray-900 border-0 text-xs text-white">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </Badge>
+                      )}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-80 bg-white border-gray-200">
-                    <div className="p-3 border-b border-gray-200">
+                  <DropdownMenuContent align="end" className="w-80 bg-white border-gray-200 max-h-96 overflow-y-auto">
+                    <div className="p-3 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
                       <p className="text-gray-900 font-medium">Notifications</p>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-xs text-gray-600 hover:text-gray-900"
+                        >
+                          Mark all read
+                        </button>
+                      )}
                     </div>
-                    <DropdownMenuItem className="p-4 text-gray-600 hover:bg-gray-50 focus:bg-gray-50">
-                      <div>
-                        <p className="text-gray-900">New order received</p>
-                        <p className="text-sm text-gray-500">2 hours ago</p>
+                    {notifications.length === 0 ? (
+                      <div className="p-8 text-center text-gray-500 text-sm">
+                        No notifications yet
                       </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="p-4 text-gray-600 hover:bg-gray-50 focus:bg-gray-50">
-                      <div>
-                        <p className="text-gray-900">Project milestone completed</p>
-                        <p className="text-sm text-gray-500">5 hours ago</p>
-                      </div>
-                    </DropdownMenuItem>
+                    ) : (
+                      notifications.slice(0, 10).map((notification) => (
+                        <DropdownMenuItem
+                          key={notification.id}
+                          className={`p-4 text-gray-600 hover:bg-gray-50 focus:bg-gray-50 cursor-pointer ${
+                            !notification.isRead ? 'bg-gray-50/50' : ''
+                          }`}
+                          onClick={() => {
+                            if (!notification.isRead) {
+                              markAsRead(notification.id);
+                            }
+                            // Navigate based on notification type
+                            if (notification.type === 'MESSAGE' && notification.data?.conversationId) {
+                              router.push('/messages');
+                            } else if (notification.type === 'ORDER_UPDATE' && notification.data?.orderId) {
+                              router.push(`/orders/${notification.data.orderId}`);
+                            }
+                          }}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-gray-900 font-medium text-sm">{notification.title}</p>
+                              {!notification.isRead && (
+                                <div className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 mt-1" />
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                            </p>
+                          </div>
+                        </DropdownMenuItem>
+                      ))
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -333,9 +373,11 @@ export function Header() {
                   onClick={() => router.push('/messages')}
                 >
                   <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <Badge className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center bg-gray-900 border-0 text-[10px] sm:text-xs text-white">
-                    5
-                  </Badge>
+                  {unreadMessageCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center bg-gray-900 border-0 text-[10px] sm:text-xs text-white">
+                      {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                    </Badge>
+                  )}
                 </Button>
 
                 {/* User Menu */}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { publishToAbly } from '@/lib/ably';
+import { notifyNewMessage } from '@/lib/notifications';
 
 export async function POST(request: Request) {
   try {
@@ -96,6 +97,14 @@ export async function POST(request: Request) {
       await publishToAbly(`conversation:${conversationId}`, 'message:new', formattedMessage);
       await publishToAbly(`user:${receiverId}`, 'notification:new-message', formattedMessage);
       await publishToAbly(`conversation:${conversationId}`, 'typing:stop', { userId });
+      
+      // Create a notification for the receiver
+      await notifyNewMessage(
+        receiverId,
+        message.sender.name || 'Someone',
+        content,
+        conversationId
+      );
     } catch (err) {
       console.warn('Ably publish failed in /api/messages/send', err);
     }
