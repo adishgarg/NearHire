@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { copyBoxInto } from 'framer-motion';
 
 export function Header() {
   const router = useRouter();
@@ -33,9 +34,9 @@ export function Header() {
   }, []);
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
-    e.preventDefault();
     const target = document.getElementById(targetId);
     if (target) {
+      e.preventDefault();
       target.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
@@ -252,9 +253,12 @@ export function Header() {
 
           {/* Left: Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-6 text-sm">
-            <Link href="/marketplace" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Services
-            </Link>
+            <button
+              onClick={() => router.push('/marketplace')}
+              className="bg-gray-900 hover:bg-gray-800 text-white border-none rounded-full px-6 h-8 text-sm font-medium transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              Buy Services
+            </button>
             <a 
               href="/#categories" 
               onClick={(e) => handleSmoothScroll(e, 'categories')}
