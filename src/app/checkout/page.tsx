@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import Script from 'next/script';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +48,6 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [requirements, setRequirements] = useState('');
   const [error, setError] = useState('');
-  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -85,7 +83,7 @@ function CheckoutContent() {
   }, [gigId, router, status]);
 
   const handlePlaceOrder = async () => {
-    if (!gig || !razorpayLoaded) return;
+    if (!gig) return;
 
     if (!requirements.trim()) {
       setError('Please provide order requirements');
@@ -96,91 +94,26 @@ function CheckoutContent() {
     setError('');
 
     try {
-      const price = Number(gig.price);
-      const platformFee = price * 0.10;
-      const totalAmount = price + platformFee;
-
-      // Step 1: Create Razorpay order
-      const orderResponse = await fetch('/api/payment/create-order', {
+      const response = await fetch('/api/orders', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           gigId: gig.id,
-          amount: totalAmount,
-          currency: 'INR',
+          requirements: requirements.trim(),
         }),
       });
 
-      if (!orderResponse.ok) {
-        throw new Error('Failed to create payment order');
+      const data = await response.json();
+
+      if (response.ok && data.order) {
+        router.push(`/orders/confirmation/${data.order.id}`);
+      } else {
+        setError(data.error || 'Failed to place order');
+        setSubmitting(false);
       }
-
-      const orderData = await orderResponse.json();
-
-      // Step 2: Open Razorpay checkout
-      const options = {
-        key: orderData.key,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'NearHire',
-        description: gig.title,
-        image: '/logo.png',
-        order_id: orderData.orderId,
-        handler: async function (response: any) {
-          // Step 3: Verify payment and create order
-          try {
-            const verifyResponse = await fetch('/api/payment/verify', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                gigId: gig.id,
-                requirements: requirements.trim(),
-                amount: totalAmount,
-                platformFee: platformFee,
-              }),
-            });
-
-            const verifyData = await verifyResponse.json();
-
-            if (verifyResponse.ok) {
-              router.push(`/orders/confirmation/${verifyData.order.id}`);
-            } else {
-              setError(verifyData.error || 'Payment verification failed');
-              setSubmitting(false);
-            }
-          } catch (err) {
-            console.error('Payment verification error:', err);
-            setError('Payment verification failed. Please contact support.');
-            setSubmitting(false);
-          }
-        },
-        prefill: {
-          name: session?.user?.name || '',
-          email: session?.user?.email || '',
-        },
-        theme: {
-          color: '#111827',
-        },
-        modal: {
-          ondismiss: function() {
-            setSubmitting(false);
-          }
-        }
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-
-    } catch (error) {
-      console.error('Payment error:', error);
-      setError('Failed to initiate payment. Please try again.');
+    } catch (err) {
+      console.error('Order creation error:', err);
+      setError('Failed to place order. Please try again.');
       setSubmitting(false);
     }
   };
@@ -214,12 +147,7 @@ function CheckoutContent() {
 
   return (
     <div className="min-h-screen bg-[#f5ecdf] text-gray-900">
-      {/* Load Razorpay script */}
-      <Script
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        onLoad={() => setRazorpayLoaded(true)}
-        onError={() => setError('Failed to load payment gateway')}
-      />
+      
       
       <div className="container mx-auto py-8 px-4 max-w-6xl">
         {/* Header */}
@@ -379,17 +307,15 @@ function CheckoutContent() {
                   <Button
                     className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-full py-6"
                     onClick={handlePlaceOrder}
-                    disabled={submitting || !requirements.trim() || !razorpayLoaded}
+                    disabled={submitting || !requirements.trim()}
                   >
                     {submitting ? (
                       <span className="flex items-center gap-2">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Processing Payment...
+                        Placing order...
                       </span>
-                    ) : !razorpayLoaded ? (
-                      'Loading Payment Gateway...'
                     ) : (
-                      `Pay ₹${totalAmount.toFixed(2)}`
+                      `Place Order`
                     )}
                   </Button>
 

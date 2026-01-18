@@ -74,8 +74,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Single subscription plan - no plan parameter needed
-    const plan = 'SELLER';
+    const body = await request.json().catch(() => ({}));
+    const plan = body.plan || 'TIER1';
+    const billingCycle = body.billingCycle === 'yearly' ? 'yearly' : 'monthly';
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -89,11 +90,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Single subscription plan pricing - ₹499/month
-    const price = 499;
+    // Determine pricing by plan and billingCycle
+    const pricing: Record<string, { monthly: number; yearly: number }> = {
+      TIER1: { monthly: 99, yearly: 999 },
+      TIER2: { monthly: 199, yearly: 1999 },
+      TIER3: { monthly: 299, yearly: 2999 }
+    };
+
+    const planPricing = pricing[plan] || pricing.TIER1;
+    const price = billingCycle === 'yearly' ? planPricing.yearly : planPricing.monthly;
     const amount = price * 100; // Convert to paise for Razorpay
 
-    // Create Razorpay order
+    // Create Razorpay plan/customer/subscription
     if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
       console.error('Missing Razorpay credentials');
       return NextResponse.json(
@@ -107,39 +115,124 @@ export async function POST(request: NextRequest) {
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET
     });
-
-    let razorpayOrder;
     try {
-      razorpayOrder = await razorpay.orders.create({
-        amount,
-        currency: 'INR',
-        receipt: `sub-${user.id.substring(0, 20)}-${Date.now().toString().slice(-8)}`,
+      console.log('🔧 Creating Razorpay plan with payload:', JSON.stringify({
+        period: billingCycle === 'yearly' ? 'yearly' : 'monthly',
+        interval: 1,
+        item: {
+          name: `${plan} - ${billingCycle}`,
+          amount: amount,
+          currency: 'INR'
+        }
+      }, null, 2));
+
+      // Create a Plan in Razorpay (if you prefer to reuse plans you can store plan ids)
+      const planPayload = {
+        period: billingCycle === 'yearly' ? 'yearly' : 'monthly',
+        interval: 1,
+        item: {
+          name: `${plan} - ${billingCycle}`,
+          amount: amount,
+          currency: 'INR'
+        }
+      };
+
+      const razorpayPlan = await razorpay.plans.create(planPayload);
+      console.log('✅ Razorpay plan created:', razorpayPlan.id);
+
+      // Create or fetch customer
+      const customerPayload = {
+        name: user.name || 'Customer',
+        email: user.email,
+        contact: user.phone || undefined,
+        fail_existing: 0
+      };
+
+      console.log('🔧 Creating Razorpay customer...');
+      const razorpayCustomer = await razorpay.customers.create(customerPayload);
+      console.log('✅ Razorpay customer created:', razorpayCustomer.id);
+
+      // Create subscription
+      const subscriptionPayload: any = {
+        plan_id: razorpayPlan.id,
+        customer_notify: 1,
+        customer_id: razorpayCustomer.id,
+        total_count: 9999,
         notes: {
           userId: user.id,
           plan,
+          billingCycle,
           type: 'subscription'
         }
+      };
+
+      console.log('🔧 Creating Razorpay subscription...');
+      const razorpaySubscription = await razorpay.subscriptions.create(subscriptionPayload);
+      console.log('✅ Razorpay subscription created:', razorpaySubscription.id);
+
+      // Save subscription record in DB (initial inactive until payment verification webhook)
+      const startDate = new Date();
+      const days = billingCycle === 'yearly' ? 365 : 30;
+      const endDate = new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
+
+      const created = await prisma.subscription.upsert({
+        where: { userId: user.id },
+        update: {
+          plan,
+          status: 'PENDING',
+          billingCycle: billingCycle.toUpperCase(),
+          startDate,
+          endDate,
+          price: price,
+          razorpayCustomerId: razorpayCustomer.id,
+          razorpaySubscriptionId: razorpaySubscription.id,
+          isAutoRenew: true,
+          updatedAt: new Date()
+        },
+        create: {
+          userId: user.id,
+          plan,
+          status: 'PENDING',
+          billingCycle: billingCycle.toUpperCase(),
+          startDate,
+          endDate,
+          price: price,
+          razorpayCustomerId: razorpayCustomer.id,
+          razorpaySubscriptionId: razorpaySubscription.id,
+          isAutoRenew: true
+        }
       });
-    } catch (razorpayError) {
-      console.error('Razorpay order creation error:', razorpayError);
+
+      return NextResponse.json({
+        success: true,
+        key: process.env.RAZORPAY_KEY_ID,
+        subscriptionId: razorpaySubscription.id,
+        plan,
+        billingCycle,
+        userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
+        userPhone: user.phone
+      });
+    } catch (err: any) {
+      console.error('❌ Razorpay subscription creation error:', {
+        statusCode: err.statusCode,
+        error: err.error,
+        message: err.message,
+        description: err.error?.description,
+        stack: err.stack
+      });
+      
+      // Return more specific error message
+      const errorMessage = err.error?.description || err.message || 'Failed to create subscription';
       return NextResponse.json(
-        { error: 'Failed to create payment order. Please try again.' },
+        { 
+          error: errorMessage,
+          details: err.error || err.message
+        },
         { status: 500 }
       );
     }
-
-    return NextResponse.json({
-      success: true,
-      key: process.env.RAZORPAY_KEY_ID,
-      orderId: razorpayOrder.id,
-      amount: razorpayOrder.amount,
-      currency: razorpayOrder.currency,
-      plan,
-      userId: user.id,
-      userName: user.name,
-      userEmail: user.email,
-      userPhone: user.phone
-    });
 
   } catch (error) {
     console.error('Subscription creation error:', error);

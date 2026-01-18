@@ -14,14 +14,16 @@ interface Notification {
 }
 
 export function useNotifications() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const ablyClientRef = useRef<any>(null);
+  const fetchedRef = useRef(false);
 
   // Fetch notifications
   const fetchNotifications = async (unreadOnly = false) => {
+    if (!session || status !== 'authenticated') return;
     try {
       const url = `/api/notifications${unreadOnly ? '?unreadOnly=true' : ''}`;
       const response = await fetch(url);
@@ -38,6 +40,7 @@ export function useNotifications() {
 
   // Fetch unread count
   const fetchUnreadCount = async () => {
+    if (!session || status !== 'authenticated') return;
     try {
       const response = await fetch('/api/notifications/unread-count');
       if (response.ok) {
@@ -51,6 +54,7 @@ export function useNotifications() {
 
   // Mark notification as read
   const markAsRead = async (notificationId: string) => {
+    if (!session || status !== 'authenticated') return;
     try {
       await fetch('/api/notifications/mark-read', {
         method: 'POST',
@@ -69,6 +73,7 @@ export function useNotifications() {
 
   // Mark all as read
   const markAllAsRead = async () => {
+    if (!session || status !== 'authenticated') return;
     try {
       await fetch('/api/notifications/mark-read', {
         method: 'POST',
@@ -132,11 +137,12 @@ export function useNotifications() {
 
   // Fetch initial data
   useEffect(() => {
-    if (session?.user?.id) {
-      fetchNotifications();
-      fetchUnreadCount();
-    }
-  }, [session?.user?.id]);
+    if (status !== 'authenticated' || !session?.user?.id || fetchedRef.current) return;
+    
+    fetchedRef.current = true;
+    fetchNotifications();
+    fetchUnreadCount();
+  }, [status, session?.user?.id]);
 
   // Request browser notification permission
   const requestNotificationPermission = async () => {

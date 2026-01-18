@@ -15,26 +15,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { paymentId, orderId, signature, amount } = body;
+    const { paymentId, orderId, signature, amount, plan, billingCycle, subscriptionId } = body;
 
-    if (!paymentId || !orderId || !signature) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+    // subscriptionId and paymentId required for subscription verification
+    if (!paymentId || !subscriptionId || !signature) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Verify payment signature
+    // Verify signature for subscription checkout: hmac(payment_id|subscription_id)
     const generatedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
-      .update(`${orderId}|${paymentId}`)
+      .update(`${paymentId}|${subscriptionId}`)
       .digest('hex');
 
     if (generatedSignature !== signature) {
-      return NextResponse.json(
-        { error: 'Payment signature verification failed' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Payment signature verification failed' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
@@ -49,32 +44,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate end date (30 days from now)
+    // Calculate end date based on billing cycle
     const startDate = new Date();
-    const endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const days = billingCycle === 'yearly' ? 365 : 30;
+    const endDate = new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
 
     // Create or update subscription
+    const planKey = plan || 'TIER1';
     const subscription = await prisma.subscription.upsert({
       where: { userId: user.id },
       update: {
-        plan: 'SELLER',
+        plan: planKey,
         status: 'ACTIVE',
+        billingCycle: billingCycle ? billingCycle.toUpperCase() : 'MONTHLY',
         startDate,
         endDate,
         paymentId,
         orderId,
+        razorpaySubscriptionId: subscriptionId,
+        price: amount ? amount / 100 : undefined,
         isAutoRenew: true,
         updatedAt: new Date()
       },
       create: {
         userId: user.id,
-        plan: 'SELLER',
+        plan: planKey,
         status: 'ACTIVE',
+        billingCycle: billingCycle ? billingCycle.toUpperCase() : 'MONTHLY',
         startDate,
         endDate,
         paymentId,
         orderId,
-        price: amount ? amount / 100 : 499,
+        razorpaySubscriptionId: subscriptionId,
+        price: amount ? amount / 100 : 0,
         isAutoRenew: true
       }
     });

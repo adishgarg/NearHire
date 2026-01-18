@@ -60,22 +60,17 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const handleRoleSelection = (role: UserRole) => {
     setSelectedRole(role);
     if (role === 'BUYER') {
-      setCurrentStep('buyer-profile');
+      // Buyers skip profile setup and go directly to complete
+      setCurrentStep('complete');
     } else if (role === 'SELLER') {
+      // Sellers must fill out profile
       setCurrentStep('seller-profile');
-    } else {
-      // For 'BOTH', start with buyer profile
-      setCurrentStep('buyer-profile');
     }
   };
 
   const handleBuyerProfileComplete = (data: BuyerProfileData) => {
     setBuyerData(data);
-    if (selectedRole === 'BOTH') {
-      setCurrentStep('seller-profile');
-    } else {
-      setCurrentStep('complete');
-    }
+    setCurrentStep('complete');
   };
 
   const handleSellerProfileComplete = (data: SellerProfileData) => {
@@ -84,11 +79,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   };
 
   const handleBuyerProfileSkip = () => {
-    if (selectedRole === 'BOTH') {
-      setCurrentStep('seller-profile');
-    } else {
-      setCurrentStep('complete');
-    }
+    setCurrentStep('complete');
   };
 
   const handleSellerProfileSkip = () => {
@@ -121,12 +112,23 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
       if (response.ok) {
         console.log('✅ Onboarding data saved successfully');
-        await update();
+        
+        // Determine redirect path and store it
+        const redirectPath = selectedRole === 'BUYER' ? '/marketplace' 
+          : selectedRole === 'SELLER' ? '/subscription' 
+          : '/profile';
+        
+        // Store redirect path in localStorage before signing out
+        localStorage.setItem('postOnboardingRedirect', redirectPath);
         
         if (onComplete) {
           onComplete();
         } else {
-          router.push('/profile');
+          console.log('🔄 Forcing session refresh by signing out and redirecting to login');
+          
+          // Sign out and redirect to login with a flag
+          await signOut({ redirect: false });
+          window.location.href = '/auth/login?onboardingComplete=true';
         }
       } else {
         console.error('❌ Failed to save onboarding data:', responseData);

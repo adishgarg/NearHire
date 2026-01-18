@@ -4,12 +4,14 @@ import { useEffect, useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 
 export function useUnreadMessages() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [unreadCount, setUnreadCount] = useState(0);
   const ablyClientRef = useRef<any>(null);
+  const fetchedRef = useRef(false);
 
   // Fetch unread count
   const fetchUnreadCount = async () => {
+    if (!session || status !== 'authenticated') return;
     try {
       const response = await fetch('/api/messages/unread-count');
       if (response.ok) {
@@ -59,10 +61,11 @@ export function useUnreadMessages() {
 
   // Fetch initial count
   useEffect(() => {
-    if (session?.user?.id) {
-      fetchUnreadCount();
-    }
-  }, [session?.user?.id]);
+    if (status !== 'authenticated' || !session?.user?.id || fetchedRef.current) return;
+    
+    fetchedRef.current = true;
+    fetchUnreadCount();
+  }, [status, session?.user?.id]);
 
   return { unreadCount, refreshCount: fetchUnreadCount };
 }

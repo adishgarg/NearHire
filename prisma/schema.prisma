@@ -118,11 +118,15 @@ model Subscription {
   userId          String    @unique @map("user_id")
   plan            String    @default("BASIC") // BASIC, PROFESSIONAL, PREMIUM
   status          String    @default("ACTIVE") // ACTIVE, INACTIVE, EXPIRED, CANCELLED
+  billingCycle    String    @default("MONTHLY") @map("billing_cycle") // MONTHLY, YEARLY
   startDate       DateTime  @map("start_date")
   endDate         DateTime  @map("end_date")
   price           Decimal   @db.Decimal(10, 2)
   paymentId       String?   @map("payment_id")
   orderId         String?   @map("order_id")
+  razorpaySubscriptionId String? @map("razorpay_subscription_id")
+  razorpayCustomerId String? @map("razorpay_customer_id")
+  nextBillingAt DateTime? @map("next_billing_at")
   isAutoRenew     Boolean   @default(true) @map("is_auto_renew")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
@@ -327,11 +331,13 @@ model Transaction {
   orderId         String            @map("order_id")
   userId          String            @map("user_id")
   amount          Decimal           @db.Decimal(10, 2)
-  platformFee     Decimal           @db.Decimal(10, 2) @map("platform_fee")
+  currency        String            @default("INR")
+  platformFee     Decimal?          @db.Decimal(10, 2) @map("platform_fee")
   type            TransactionType
   status          TransactionStatus @default(PENDING)
-  paymentGateway  String            @map("payment_gateway") // razorpay, stripe
+  paymentGateway  String?           @map("payment_gateway") // razorpay, stripe
   paymentId       String?           @map("payment_id")
+  paymentMethod   String?           @map("payment_method")
   refundId        String?           @map("refund_id")
   description     String?
   metadata        Json?
@@ -339,7 +345,7 @@ model Transaction {
   updatedAt       DateTime          @updatedAt @map("updated_at")
   
   // Relations
-  order           Order             @relation(fields: [orderId], references: [id])
+  order           Order?            @relation(fields: [orderId], references: [id])
   user            User              @relation(fields: [userId], references: [id])
 
   @@map("transactions")
@@ -398,6 +404,7 @@ enum TransactionType {
   REFUND
   WITHDRAWAL
   COMMISSION
+  SUBSCRIPTION
 }
 
 enum TransactionStatus {
@@ -405,6 +412,7 @@ enum TransactionStatus {
   COMPLETED
   FAILED
   CANCELLED
+  SUCCESS
 }
 
 enum NotificationType {

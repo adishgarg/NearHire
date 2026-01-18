@@ -1,6 +1,12 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import Razorpay from 'razorpay';
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,6 +40,26 @@ export async function POST(request: NextRequest) {
         { error: 'No active subscription found' },
         { status: 404 }
       );
+    }
+
+    if (subscription.status !== 'ACTIVE') {
+      return NextResponse.json(
+        { error: 'Subscription is not active' },
+        { status: 400 }
+      );
+    }
+
+    // Cancel subscription in Razorpay if it exists
+    if (subscription.razorpaySubscriptionId) {
+      try {
+        await razorpay.subscriptions.cancel(
+          subscription.razorpaySubscriptionId,
+          false // cancel_at_cycle_end = false means immediate cancellation
+        );
+      } catch (error: any) {
+        console.error('Error cancelling Razorpay subscription:', error);
+        // Continue even if Razorpay cancellation fails
+      }
     }
 
     // Cancel subscription

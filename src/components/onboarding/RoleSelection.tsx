@@ -22,8 +22,6 @@ export function RoleSelection({ onRoleSelect }: RoleSelectionProps) {
       features: [
         'Browse thousands of services',
         'Get quotes from top freelancers',
-        'Secure payment protection',
-        '24/7 customer support'
       ],
       color: 'bg-blue-500',
       badge: 'Buyer'
@@ -36,25 +34,9 @@ export function RoleSelection({ onRoleSelect }: RoleSelectionProps) {
       features: [
         'Create professional gigs',
         'Set your own prices',
-        'Build your reputation',
-        'Withdraw earnings easily'
       ],
       color: 'bg-emerald-500',
       badge: 'Seller'
-    },
-    {
-      id: 'BOTH' as const,
-      title: 'I want to do both',
-      description: 'Hire talent and offer your own services',
-      icon: Users,
-      features: [
-        'Full marketplace access',
-        'Buy and sell services',
-        'Complete flexibility',
-        'Maximum opportunities'
-      ],
-      color: 'bg-purple-500',
-      badge: 'Both'
     }
   ];
 
@@ -70,7 +52,7 @@ export function RoleSelection({ onRoleSelect }: RoleSelectionProps) {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 gap-6 mb-8 max-w-3xl mx-auto">
           {roles.map((role) => {
             const Icon = role.icon;
             const isSelected = selectedRole === role.id;

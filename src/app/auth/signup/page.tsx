@@ -75,8 +75,8 @@ export default function SignUpPage() {
         // Redirect to login page
         setTimeout(() => router.push('/auth/signin'), 2000);
       } else {
-        // Success - redirect to dashboard
-        router.push('/profile');
+        // Success - redirect to onboarding for new users
+        router.push('/onboarding');
       }
     } catch (error) {
       setError('Network error. Please try again.');
@@ -90,7 +90,7 @@ export default function SignUpPage() {
     setIsLoading(true);
     try {
       const result = await signIn(provider, { 
-        callbackUrl: '/profile',
+        callbackUrl: '/onboarding',
         redirect: false // Don't redirect immediately
       });
       

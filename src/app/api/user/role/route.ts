@@ -15,26 +15,7 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        accounts: {
-          select: {
-            provider: true,
-            providerAccountId: true,
-          },
-        },
-        subscription: {
-          select: {
-            id: true,
-            plan: true,
-            status: true,
-            billingCycle: true,
-            startDate: true,
-            endDate: true,
-            price: true,
-            razorpaySubscriptionId: true,
-          },
-        },
-      },
+      select: { role: true },
     });
 
     if (!user) {
@@ -45,12 +26,10 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      hasPassword: !!user.password,
-      accounts: user.accounts,
-      subscription: user.subscription,
+      role: user.role,
     });
   } catch (error) {
-    console.error('Error fetching settings:', error);
+    console.error('Error fetching user role:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -22,6 +22,20 @@ export default function LoginPage() {
     password: ''
   });
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const onboardingComplete = searchParams.get('onboardingComplete');
+
+  // Check for post-onboarding redirect
+  useEffect(() => {
+    if (onboardingComplete === 'true') {
+      const redirectPath = localStorage.getItem('postOnboardingRedirect');
+      if (redirectPath) {
+        localStorage.removeItem('postOnboardingRedirect');
+        // Show message to user
+        setError('Please sign in again to complete setup.');
+      }
+    }
+  }, [onboardingComplete]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +50,10 @@ export default function LoginPage() {
       });
       
       if (result?.ok) {
-        router.push('/profile');
+        // Check for stored redirect path
+        const redirectPath = localStorage.getItem('postOnboardingRedirect') || '/profile';
+        localStorage.removeItem('postOnboardingRedirect');
+        router.push(redirectPath);
       } else {
         setError('Invalid email or password. Please try again.');
         console.error('Login failed:', result?.error);
@@ -54,8 +71,11 @@ export default function LoginPage() {
     try {
       console.log(`🔄 Starting ${provider} OAuth sign-in...`);
       
+      // Get stored redirect path or default to profile
+      const redirectPath = localStorage.getItem('postOnboardingRedirect') || '/profile';
+      
       await signIn(provider, { 
-        callbackUrl: '/profile'
+        callbackUrl: redirectPath
       });
       
     } catch (error) {

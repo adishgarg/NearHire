@@ -45,6 +45,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Enforce gig limits based on subscription plan
+    const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
+    const planKey = subscription?.plan || 'TIER1';
+    const planLimits: Record<string, number | null> = {
+      TIER1: 15,
+      TIER2: 50,
+      TIER3: null // null = unlimited
+    };
+
+    const allowed = planLimits[planKey] ?? 15;
+    if (allowed !== null) {
+      const activeGigsCount = await prisma.gig.count({ where: { sellerId: user.id, isActive: true } });
+      if (activeGigsCount >= allowed) {
+        return NextResponse.json(
+          { error: `Your current plan (${planKey}) allows up to ${allowed} gigs. Please upgrade to add more gigs.` },
+          { status: 403 }
+        );
+      }
+    }
+
     const body = await request.json();
     
     const {

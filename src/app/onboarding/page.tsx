@@ -1,29 +1,33 @@
-import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 
-const prisma = new PrismaClient();
+export default function OnboardingPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-export default async function OnboardingPage() {
-  const session = await auth();
-  
-  if (!session?.user?.email) {
-    redirect('/login');
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/login');
+    }
+  }, [status, router]);
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Check if user exists and get their onboarding status
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email }
-  });
-
-  if (!user) {
-    redirect('/login');
-  }
-
-  // If onboarding is already completed, redirect to dashboard
-  if ((user as any).onboardingCompleted) {
-    redirect('/dashboard');
+  if (!session) {
+    return null;
   }
 
   return <OnboardingFlow />;

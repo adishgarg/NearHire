@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import Script from 'next/script';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Check, AlertCircle, Clock } from 'lucide-react';
+import { Check, AlertCircle, Clock, Lock, Sparkles } from 'lucide-react';
 import '@/types/razorpay';
 
 interface SubscriptionData {
@@ -24,17 +24,39 @@ interface SubscriptionData {
 
 const PLANS = [
   {
-    name: 'SELLER',
-    price: 499,
-    displayPrice: '₹499',
+    key: 'TIER1',
+    name: 'Tier 1',
+    monthly: 99,
+    yearly: 999,
+    displayMonthly: '₹99',
+    displayYearly: '₹999',
     features: [
-      'Unlimited gigs creation',
-      'Seller dashboard',
-      'Email & priority support',
-      'Featured gig placement',
-      'Advanced analytics',
-      'Monthly renewal',
-      'Cancel anytime'
+      '15 gigs',
+      'Seller dashboard'
+    ]
+  },
+  {
+    key: 'TIER2',
+    name: 'Tier 2',
+    monthly: 199,
+    yearly: 1999,
+    displayMonthly: '₹199',
+    displayYearly: '₹1999',
+    features: [
+      '50 gigs',
+      'Seller dashboard'
+    ]
+  },
+  {
+    key: 'TIER3',
+    name: 'Tier 3',
+    monthly: 299,
+    yearly: 2999,
+    displayMonthly: '₹299',
+    displayYearly: '₹2999',
+    features: [
+      'Unlimited gigs',
+      'Seller dashboard'
     ]
   }
 ];
@@ -42,11 +64,15 @@ const PLANS = [
 export default function SubscriptionPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isUpgrade = searchParams.get('upgrade') === 'true';
+  const isRequired = searchParams.get('required') === 'true';
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -74,18 +100,16 @@ export default function SubscriptionPage() {
     }
   }, [status, router]);
 
-  const handleSubscribe = async (plan: string) => {
-    setProcessingPlan(plan);
+  const handleSubscribe = async (planKey: string) => {
+    setProcessingPlan(planKey);
     setError('');
 
     try {
-      // Create order
+      // Create order with selected plan and billing cycle
       const orderResponse = await fetch('/api/subscription', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: planKey, billingCycle }),
       });
 
       if (!orderResponse.ok) {
@@ -93,52 +117,46 @@ export default function SubscriptionPage() {
         throw new Error(errorData.error || 'Failed to create order');
       }
 
-      const orderData = await orderResponse.json();
+      const data = await orderResponse.json();
 
-      // Initialize Razorpay payment
+      // Initialize Razorpay subscription checkout
       if (!window.Razorpay || !razorpayLoaded) {
         throw new Error('Payment system is still loading. Please try again in a moment.');
       }
 
       const options = {
-        key: orderData.key,
-        order_id: orderData.orderId,
-        amount: orderData.amount,
-        currency: orderData.currency,
+        key: data.key,
+        subscription_id: data.subscriptionId,
         name: 'NearHire Subscription',
-        description: `${plan} Plan - Monthly Subscription`,
+        description: `${planKey} Plan - ${billingCycle === 'monthly' ? 'Monthly' : 'Yearly'} Subscription`,
         prefill: {
-          name: orderData.userName,
-          email: orderData.userEmail,
-          contact: orderData.userPhone
+          name: data.userName,
+          email: data.userEmail,
+          contact: data.userPhone
         },
         handler: async (response: any) => {
           try {
-            // Verify payment
+            // Verify payment for subscription initial charge
             const verifyResponse = await fetch('/api/subscription/verify', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                orderId: orderData.orderId,
+                subscriptionId: data.subscriptionId,
                 paymentId: response.razorpay_payment_id,
                 signature: response.razorpay_signature,
-                amount: orderData.amount
+                amount: null,
+                plan: planKey,
+                billingCycle
               })
             });
 
             if (verifyResponse.ok) {
-              // Fetch updated subscription
               const updatedResponse = await fetch('/api/subscription');
               const updatedData = await updatedResponse.json();
               setSubscription(updatedData);
-              
-              // Show success message and redirect
+
               alert('Subscription activated successfully!');
-              setTimeout(() => {
-                router.push('/dashboard');
-              }, 2000);
+              setTimeout(() => router.push('/dashboard'), 1200);
             } else {
               const errorData = await verifyResponse.json();
               setError(errorData.error || 'Payment verification failed');
@@ -151,13 +169,11 @@ export default function SubscriptionPage() {
           }
         },
         modal: {
-          ondismiss: () => {
-            setProcessingPlan(null);
-          }
+          ondismiss: () => setProcessingPlan(null)
         }
       };
 
-      const razorpay = new window.Razorpay(options);
+      const razorpay = new window.Razorpay(options as any);
       razorpay.open();
     } catch (err) {
       console.error('Subscription error:', err);
@@ -211,6 +227,29 @@ export default function SubscriptionPage() {
       />
 
       <div className="container mx-auto py-16 px-4 relative z-10">
+        {/* Upgrade/Required Alert */}
+        {(isUpgrade || isRequired) && (
+          <div className="max-w-4xl mx-auto mb-12">
+            <Alert className="border-2 border-gray-900 bg-white rounded-2xl">
+              <div className="flex items-start gap-4">
+                <div className="h-12 w-12 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
+                  {isUpgrade ? <Lock className="h-6 w-6 text-white" /> : <Sparkles className="h-6 w-6 text-white" />}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {isUpgrade ? 'Upgrade to Start Selling' : 'Subscription Required'}
+                  </h3>
+                  <AlertDescription className="text-gray-600">
+                    {isUpgrade 
+                      ? 'Subscribe to a seller plan to create gigs, earn money, and build your business on NearHire.' 
+                      : 'An active subscription is required to create and manage gigs. Choose a plan below to continue.'}
+                  </AlertDescription>
+                </div>
+              </div>
+            </Alert>
+          </div>
+        )}
+
         {/* Hero Header */}
         <div className="text-center mb-20">
           <div className="inline-flex items-center justify-center mb-6 px-4 py-2 bg-white rounded-full border border-gray-200">
@@ -269,57 +308,74 @@ export default function SubscriptionPage() {
           </Alert>
         )}
 
-        {/* Plans Grid */}
-        <div className="max-w-3xl mx-auto mb-20">
-          {PLANS.map((plan) => (
-            <div
-              key={plan.name}
-              className="relative group"
+        {/* Billing Cycle Toggle */}
+        <div className="max-w-3xl mx-auto mb-6 flex justify-center">
+          <div className="inline-flex bg-gray-100 p-1 rounded-full border border-gray-200">
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              className={`px-4 py-2 rounded-full ${billingCycle === 'monthly' ? 'bg-white text-gray-900' : 'text-gray-600'}`}
             >
-              <Card className="relative border border-gray-200 bg-white rounded-2xl shadow-md overflow-hidden">
-                <CardHeader className="text-center pb-6 pt-8 bg-white">
-                  <div className="inline-block mx-auto mb-4 px-3 py-1 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full">
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingCycle('yearly')}
+              className={`px-4 py-2 rounded-full ${billingCycle === 'yearly' ? 'bg-white text-gray-900' : 'text-gray-600'}`}
+            >
+              Yearly
+            </button>
+          </div>
+        </div>
+
+        {/* Plans Grid */}
+        <div className="max-w-6xl mx-auto mb-20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 items-stretch">
+          {PLANS.map((plan) => (
+            <div key={plan.key} className="relative group">
+              <Card className="relative border border-gray-200 bg-white rounded-xl shadow-sm overflow-hidden">
+                <CardHeader className="text-center pb-4 pt-6 bg-white">
+                  <div className="inline-block mx-auto mb-3 px-2 py-1 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full">
                     <span className="text-xs font-bold text-blue-700">SELLER PLAN</span>
                   </div>
-                  <CardTitle className="text-4xl font-black text-gray-900">{plan.name}</CardTitle>
-                  <div className="mt-8">
+                  <CardTitle className="text-2xl font-black text-gray-900">{plan.name}</CardTitle>
+                  <div className="mt-4">
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl sm:text-6xl font-black text-gray-900">{plan.displayPrice}</span>
-                      <span className="text-gray-600 font-medium">/month</span>
+                      <span className="text-3xl sm:text-4xl font-black text-gray-900">
+                        {billingCycle === 'monthly' ? `₹${plan.monthly}` : `₹${plan.yearly}`}
+                      </span>
+                      <span className="text-gray-600 font-medium">/{billingCycle === 'monthly' ? 'month' : 'year'}</span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">Billed monthly • Cancel anytime</p>
+                    <p className="text-sm text-gray-500 mt-1">Billed {billingCycle === 'monthly' ? 'monthly' : 'yearly'}</p>
                   </div>
                 </CardHeader>
-                <CardContent className="px-8 py-8 space-y-8">
+                <CardContent className="px-6 py-6 space-y-6">
                   <Button
-                    onClick={() => handleSubscribe(plan.name)}
-                    disabled={processingPlan === plan.name || currentPlan === plan.name || !razorpayLoaded}
-                    className={`w-full text-lg py-7 rounded-2xl font-bold tracking-wide transition-all duration-300 ${
-                      currentPlan === plan.name
-                        ? 'bg-gray-100 text-gray-700 border-2 border-gray-300 hover:bg-gray-100'
+                    onClick={() => handleSubscribe(plan.key)}
+                    disabled={processingPlan === plan.key || currentPlan === plan.key || !razorpayLoaded}
+                    className={`w-full text-base py-3 rounded-xl font-semibold transition-all duration-200 ${
+                      currentPlan === plan.key
+                        ? 'bg-gray-100 text-gray-700 border-2 border-gray-300'
                         : 'bg-gray-900 text-white hover:bg-gray-800'
                     }`}
                   >
-                    {processingPlan === plan.name ? (
+                    {processingPlan === plan.key ? (
                       <>
-                        <Clock className="w-5 h-5 mr-2 animate-spin" />
-                        Processing Payment...
+                        <Clock className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
                       </>
-                    ) : currentPlan === plan.name ? (
+                    ) : currentPlan === plan.key ? (
                       '✓ Current Plan'
                     ) : (
-                      'Subscribe Now'
+                      'Subscribe'
                     )}
                   </Button>
 
-                  <div className="space-y-4 pt-4 border-t-2 border-gray-100">
-                    <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">What's Included</p>
+                  <div className="space-y-3 pt-4 border-t-2 border-gray-100">
+                    <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">What's Included</p>
                     {plan.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center gap-4 group/item">
-                        <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white" />
+                      <div key={idx} className="flex items-center gap-3 group/item">
+                        <div className="flex-shrink-0 w-5 h-5 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center">
+                          <Check className="w-3 h-3 text-white" />
                         </div>
-                        <span className="text-base text-gray-700 group-hover/item:text-gray-900 transition-colors">{feature}</span>
+                        <span className="text-sm text-gray-700 group-hover/item:text-gray-900 transition-colors">{feature}</span>
                       </div>
                     ))}
                   </div>

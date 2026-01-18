@@ -126,7 +126,15 @@ export const {
           
           // Find user by email
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email as string }
+            where: { email: credentials.email as string },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              image: true,
+              password: true,
+              onboardingCompleted: true,
+            }
           })
 
           if (!user || !user.password) {
@@ -151,6 +159,7 @@ export const {
             email: user.email,
             name: user.name,
             image: user.image,
+            onboardingCompleted: user.onboardingCompleted,
           }
         } catch (error) {
           console.error('❌ Credentials authentication failed:', error)
@@ -224,27 +233,19 @@ export const {
       }
     },
     async session({ session, token }) {
-      console.log('👤 Session callback started')
-      console.log('   Token:', JSON.stringify(token, null, 2))
-      
       if (session.user && token) {
         session.user.id = token.id as string
         session.user.email = token.email as string
         session.user.name = token.name as string || session.user.name
         session.user.image = token.picture as string || session.user.image
-        console.log('✅ Session created for user:', session.user.email, 'ID:', session.user.id)
-      } else {
-        console.log('⚠️ Session or token missing')
+        // Add onboarding status to session
+        const extendedUser = session.user as any
+        extendedUser.onboardingCompleted = token.onboardingCompleted as boolean
       }
       
       return session
     },
-    async jwt({ token, account, user }) {
-      console.log('🔑 JWT callback started')
-      console.log('   Token:', JSON.stringify(token, null, 2))
-      console.log('   User:', user ? JSON.stringify(user, null, 2) : 'null')
-      console.log('   Account provider:', account?.provider)
-      
+    async jwt({ token, account, user, trigger }) {
       // On sign in (when user object is available)
       if (user) {
         // For OAuth, we need to get the database user ID
@@ -253,7 +254,7 @@ export const {
             const prisma = await getPrismaClient()
             const dbUser = await prisma.user.findUnique({
               where: { email: user.email as string },
-              select: { id: true, email: true, name: true, image: true }
+              select: { id: true, email: true, name: true, image: true, onboardingCompleted: true }
             })
             
             if (dbUser) {
@@ -261,25 +262,23 @@ export const {
               token.email = dbUser.email
               token.name = dbUser.name
               token.picture = dbUser.image
-              console.log('✅ JWT token created with DB user - Email:', dbUser.email, 'ID:', dbUser.id)
+              token.onboardingCompleted = dbUser.onboardingCompleted
             } else {
-              console.error('❌ User not found in database after OAuth sign in')
               // Use OAuth user data as fallback
               token.id = user.id
               token.email = user.email
               token.name = user.name
               token.picture = user.image
-              console.log('⚠️ Using OAuth user data as fallback')
+              token.onboardingCompleted = false // Default for new OAuth users
             }
             
           } catch (error) {
-            console.error('❌ Error fetching user for JWT:', error)
             // Fallback to OAuth user data
             token.id = user.id
             token.email = user.email
             token.name = user.name
             token.picture = user.image
-            console.log('⚠️ JWT error recovery: using OAuth data')
+            token.onboardingCompleted = false
           }
         } else {
           // For credentials login, use the user ID directly
@@ -287,14 +286,33 @@ export const {
           token.email = user.email
           token.name = user.name
           token.picture = user.image
-          console.log('✅ JWT token created with credentials - Email:', user.email)
+          token.onboardingCompleted = (user as any).onboardingCompleted ?? false
         }
       }
+      
+      // On session update (when trigger is 'update'), refresh user data from database
+      if (trigger === 'update' && token.email) {
+        try {
+          const prisma = await getPrismaClient()
+          const dbUser = await prisma.user.findUnique({
+            where: { email: token.email as string },
+            select: { id: true, email: true, name: true, image: true, onboardingCompleted: true }
+          })
+          
+          if (dbUser) {
+            token.onboardingCompleted = dbUser.onboardingCompleted
+            token.name = dbUser.name
+            token.picture = dbUser.image
+          }
+        } catch (error) {
+          // Silent fail on refresh
+        }
+      }
+      
       if (account) {
         token.accessToken = account.access_token
       }
 
-      console.log('✅ JWT callback completed - Token ID:', token.id)
       return token
     },
     async redirect({ url, baseUrl }) {

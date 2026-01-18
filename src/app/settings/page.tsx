@@ -20,9 +20,21 @@ interface Account {
   providerAccountId: string;
 }
 
+interface Subscription {
+  id: string;
+  plan: string;
+  status: string;
+  billingCycle: string;
+  startDate: string;
+  endDate: string;
+  price: number;
+  razorpaySubscriptionId: string | null;
+}
+
 interface UserSettings {
   hasPassword: boolean;
   accounts: Account[];
+  subscription: Subscription | null;
 }
 
 export default function SettingsPage() {
@@ -34,9 +46,13 @@ export default function SettingsPage() {
   
   // Password form state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [settingPassword, setSettingPassword] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [cancellingSubscription, setCancellingSubscription] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -46,10 +62,15 @@ export default function SettingsPage() {
       return;
     }
 
-    fetchSettings();
-  }, [session, status, router]);
+    // Only fetch once when authenticated
+    if (status === 'authenticated' && !settings) {
+      fetchSettings();
+    }
+  }, [status]);
 
   const fetchSettings = async () => {
+    if (status !== 'authenticated' || !session) return;
+    
     try {
       setLoading(true);
       const response = await fetch('/api/settings');
@@ -147,6 +168,88 @@ export default function SettingsPage() {
     }
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!currentPassword) {
+      toast.error('Current password is required');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters long');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      toast.error('New password must be different from current password');
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+      const response = await fetch('/api/settings/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to change password');
+      }
+
+      toast.success('Password changed successfully');
+      setShowChangePasswordForm(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to change password');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!settings?.subscription) return;
+
+    const confirmed = confirm(
+      'Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period.'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setCancellingSubscription(true);
+      const response = await fetch('/api/subscription/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to cancel subscription');
+      }
+
+      toast.success('Subscription cancelled successfully');
+      fetchSettings();
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to cancel subscription');
+    } finally {
+      setCancellingSubscription(false);
+    }
+  };
+
   if (status === 'loading' || loading) {
     return (
       <PageLayout>
@@ -207,6 +310,12 @@ export default function SettingsPage() {
                 className="rounded-full data-[state=active]:bg-gray-900 data-[state=active]:text-white"
               >
                 Authentication
+              </TabsTrigger>
+              <TabsTrigger 
+                value="subscription" 
+                className="rounded-full data-[state=active]:bg-gray-900 data-[state=active]:text-white"
+              >
+                Subscription
               </TabsTrigger>
               <TabsTrigger 
                 value="account" 
@@ -288,20 +397,108 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {settings.hasPassword ? (
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-2xl bg-green-50">
-                      <div className="flex items-center gap-3">
-                        <Lock className="w-5 h-5 text-green-600" />
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            Password is set
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            You can sign in with email and password
-                          </p>
+                    <>
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-2xl bg-green-50">
+                        <div className="flex items-center gap-3">
+                          <Lock className="w-5 h-5 text-green-600" />
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              Password is set
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              You can sign in with email and password
+                            </p>
+                          </div>
                         </div>
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
                       </div>
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    </div>
+
+                      {!showChangePasswordForm ? (
+                        <Button
+                          onClick={() => setShowChangePasswordForm(true)}
+                          variant="outline"
+                          className="w-full rounded-full"
+                        >
+                          Change Password
+                        </Button>
+                      ) : (
+                        <form onSubmit={handleChangePassword} className="space-y-4">
+                          <div>
+                            <Label htmlFor="currentPassword">Current Password</Label>
+                            <Input
+                              id="currentPassword"
+                              type="password"
+                              value={currentPassword}
+                              onChange={(e) => setCurrentPassword(e.target.value)}
+                              placeholder="Enter current password"
+                              required
+                              className="rounded-full"
+                            />
+                          </div>
+
+                          <div>
+                            <Label htmlFor="newPasswordChange">New Password</Label>
+                            <Input
+                              id="newPasswordChange"
+                              type="password"
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              placeholder="Enter new password"
+                              required
+                              minLength={8}
+                              className="rounded-full"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                              Must be at least 8 characters long
+                            </p>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="confirmPasswordChange">Confirm New Password</Label>
+                            <Input
+                              id="confirmPasswordChange"
+                              type="password"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              placeholder="Confirm new password"
+                              required
+                              minLength={8}
+                              className="rounded-full"
+                            />
+                          </div>
+
+                          <div className="flex gap-2">
+                            <Button
+                              type="submit"
+                              disabled={changingPassword}
+                              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white rounded-full"
+                            >
+                              {changingPassword ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Changing Password...
+                                </>
+                              ) : (
+                                'Change Password'
+                              )}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setShowChangePasswordForm(false);
+                                setCurrentPassword('');
+                                setNewPassword('');
+                                setConfirmPassword('');
+                              }}
+                              className="rounded-full"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </form>
+                      )}
+                    </>
                   ) : (
                     <>
                       {!showPasswordForm ? (
@@ -384,6 +581,117 @@ export default function SettingsPage() {
                         Setting a password provides an alternative way to sign in if you lose access to your OAuth provider.
                       </AlertDescription>
                     </Alert>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="subscription" className="space-y-6">
+              <Card className="border-gray-200 bg-white rounded-3xl">
+                <CardHeader>
+                  <CardTitle>Subscription Management</CardTitle>
+                  <CardDescription>
+                    Manage your seller subscription and billing
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {settings.subscription ? (
+                    <>
+                      <div className="p-6 border border-gray-200 rounded-2xl space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {settings.subscription.plan}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {settings.subscription.billingCycle === 'YEARLY' ? 'Yearly' : 'Monthly'} billing
+                            </p>
+                          </div>
+                          <Badge 
+                            variant={settings.subscription.status === 'ACTIVE' ? 'default' : 'secondary'}
+                            className={settings.subscription.status === 'ACTIVE' 
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                              : 'bg-gray-100 text-gray-700'}
+                          >
+                            {settings.subscription.status}
+                          </Badge>
+                        </div>
+
+                        <Separator />
+
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-gray-600">Price</p>
+                            <p className="font-medium text-gray-900">
+                              ₹{settings.subscription.price}/{settings.subscription.billingCycle === 'YEARLY' ? 'year' : 'month'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-600">Start Date</p>
+                            <p className="font-medium text-gray-900">
+                              {new Date(settings.subscription.startDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-600">End Date</p>
+                            <p className="font-medium text-gray-900">
+                              {new Date(settings.subscription.endDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-600">Status</p>
+                            <p className="font-medium text-gray-900">
+                              {settings.subscription.status === 'ACTIVE' ? 'Active & Auto-renewing' : settings.subscription.status}
+                            </p>
+                          </div>
+                        </div>
+
+                        {settings.subscription.status === 'ACTIVE' && (
+                          <>
+                            <Separator />
+                            <div>
+                              <Button
+                                variant="destructive"
+                                onClick={handleCancelSubscription}
+                                disabled={cancellingSubscription}
+                                className="w-full rounded-full"
+                              >
+                                {cancellingSubscription ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Cancelling...
+                                  </>
+                                ) : (
+                                  'Cancel Subscription'
+                                )}
+                              </Button>
+                              <p className="text-xs text-gray-500 mt-2 text-center">
+                                You'll continue to have access until {new Date(settings.subscription.endDate).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {settings.subscription.status === 'CANCELLED' && (
+                        <Alert>
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>
+                            Your subscription has been cancelled. You can still access premium features until {new Date(settings.subscription.endDate).toLocaleDateString()}.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-4">You don't have an active subscription</p>
+                      <Button
+                        onClick={() => router.push('/subscription')}
+                        className="bg-gray-900 hover:bg-gray-800 text-white rounded-full"
+                      >
+                        View Subscription Plans
+                      </Button>
+                    </div>
                   )}
                 </CardContent>
               </Card>
