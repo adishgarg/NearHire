@@ -65,6 +65,8 @@ export const {
               headers: {
                 Authorization: `Bearer ${tokens.access_token}`,
                 Accept: "application/vnd.github+json",
+                "Accept-Language": "en-us",
+                "User-Agent": "NearHire/1.0 (https://near-hire.vercel.app)",
               },
             })
 
