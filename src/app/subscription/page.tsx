@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Script from 'next/script';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -61,7 +61,7 @@ const PLANS = [
   }
 ];
 
-export default function SubscriptionPage() {
+function SubscriptionContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -475,5 +475,25 @@ export default function SubscriptionPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Simple loading fallback while search params resolve
+function LoadingState() {
+  return (
+    <div className="min-h-screen bg-[#f5ecdf] flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+        <p className="mt-4 text-gray-700">Loading subscription...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function SubscriptionPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <SubscriptionContent />
+    </Suspense>
   );
 }

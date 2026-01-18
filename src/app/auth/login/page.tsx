@@ -23,7 +23,7 @@ function LoginForm() {
   });
   const router = useRouter();
   const searchParams = useSearchParams();
-  const onboardingComplete = searchParams.get('onboardingComplete');
+  const onboardingComplete = searchParams?.get('onboardingComplete') || null;
 
   // Check for post-onboarding redirect
   useEffect(() => {
