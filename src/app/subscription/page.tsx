@@ -74,6 +74,28 @@ function SubscriptionContent() {
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
+  // If subscription is required, show a simple prompt
+  if (isRequired) {
+    return (
+      <div className="min-h-screen bg-[#f5ecdf] flex items-center justify-center p-4">
+        <Card className="relative w-full max-w-md border-gray-200 bg-white rounded-3xl shadow-xl">
+          <div className="p-8 text-center">
+            <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <Lock className="w-6 h-6 text-gray-900" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Subscription Required</h1>
+            <p className="text-gray-600 mb-6">
+              To access this feature, please subscribe to a plan.
+            </p>
+            <Button asChild className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-full">
+              <a href="/subscription">View Subscription Plans</a>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin?callbackUrl=/subscription');
