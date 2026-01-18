@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Github, Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export default function LoginPage() {
+function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -215,5 +215,30 @@ export default function LoginPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+// Loading fallback for Suspense boundary
+function LoadingState() {
+  return (
+    <div className="min-h-screen bg-[#f5ecdf] flex items-center justify-center p-4">
+      <Card className="relative w-full max-w-md border-gray-200 bg-white rounded-3xl shadow-xl">
+        <div className="p-8">
+          <div className="text-center mb-8">
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-24 mx-auto mb-4"></div>
+            <div className="h-8 bg-gray-200 rounded animate-pulse w-48 mx-auto mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-64 mx-auto"></div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <LoginForm />
+    </Suspense>
   );
 }
