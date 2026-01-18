@@ -52,6 +52,7 @@ export const {
           scope: "read:user user:email",
         },
       },
+      checks: [], // Disable PKCE - GitHub doesn't support it
       async profile(profile, tokens) {
         console.log("🐙 GitHub profile received - Login:", profile.login, "Email:", profile.email)
 
